@@ -111,3 +111,19 @@ export const arrayChunk = <T = any>(list: T[], size: number): T[][] => {
 	}
 	return res;
 }
+
+/**
+ * 从数组末尾开始移除值为 falsy 的元素，直到遇到第一个 truthy 元素
+ * @param arr 要处理的数组
+ * @returns 处理后的数组
+ */
+export const arrayTrimTail = (arr: any[]) => {
+    let lastNonZeroIndex = -1;
+    for (let i = arr.length - 1; i >= 0; i--) {
+        if (arr[i]) {
+            lastNonZeroIndex = i;
+            break;
+        }
+    }
+    return arr.slice(0, lastNonZeroIndex + 1);
+};

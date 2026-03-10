@@ -20,8 +20,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "prebuild": "npm run generate:index",
     "preview": "vite preview",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "generate:index": "node scripts/generate-index.js"
   },
   "keywords": [
     "utility",

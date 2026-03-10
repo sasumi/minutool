@@ -6,19 +6,19 @@
  * deepClone({ a: 1, b: { c: 2 } })
  */
 export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') return obj
-  if (obj instanceof Date) return new Date(obj.getTime()) as T
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as T
-  if (obj instanceof Object) {
-    const clonedObj = {} as T
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key])
-      }
+    if (obj === null || typeof obj !== "object") return obj;
+    if (obj instanceof Date) return new Date(obj.getTime()) as T;
+    if (obj instanceof Array) return obj.map((item) => deepClone(item)) as T;
+    if (obj instanceof Object) {
+        const clonedObj = {} as T;
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                clonedObj[key] = deepClone(obj[key]);
+            }
+        }
+        return clonedObj;
     }
-    return clonedObj
-  }
-  return obj
+    return obj;
 }
 
 /**
@@ -30,7 +30,7 @@ export function deepClone<T>(obj: T): T {
  * isEmptyObject({ a: 1 }) // false
  */
 export function isEmptyObject(obj: object): boolean {
-  return Object.keys(obj).length === 0
+    return Object.keys(obj).length === 0;
 }
 
 /**
@@ -40,16 +40,16 @@ export function isEmptyObject(obj: object): boolean {
  * @return {{}}
  */
 export const objectKeyMapping = (obj: Record<string, any>, mapping: Record<string, string>): Record<string, any> => {
-	let ret: Record<string, any> = {};
-	for(let key in obj){
-		if(mapping[key] !== undefined){
-			ret[mapping[key]] = obj[key];
-		} else {
-			ret[key] = obj[key];
-		}
-	}
-	return ret;
-}
+    let ret: Record<string, any> = {};
+    for (let key in obj) {
+        if (mapping[key] !== undefined) {
+            ret[mapping[key]] = obj[key];
+        } else {
+            ret[key] = obj[key];
+        }
+    }
+    return ret;
+};
 
 /**
  * 获取对象指定路径的值
@@ -62,17 +62,17 @@ export const objectKeyMapping = (obj: Record<string, any>, mapping: Record<strin
  * get({ a: { b: 1 } }, 'a.b.c', 0) // 0
  */
 export function objectGet<T = any>(obj: any, path: string, defaultValue?: T): T {
-  const keys = path.split('.')
-  let result = obj
-  
-  for (const key of keys) {
-    if (result === null || result === undefined) {
-      return defaultValue as T
+    const keys = path.split(".");
+    let result = obj;
+
+    for (const key of keys) {
+        if (result === null || result === undefined) {
+            return defaultValue as T;
+        }
+        result = result[key];
     }
-    result = result[key]
-  }
-  
-  return result !== undefined ? result : (defaultValue as T)
+
+    return result !== undefined ? result : (defaultValue as T);
 }
 
 /**
@@ -84,18 +84,18 @@ export function objectGet<T = any>(obj: any, path: string, defaultValue?: T): T 
  * set({}, 'a.b.c', 1) // { a: { b: { c: 1 } } }
  */
 export function objectSet(obj: any, path: string, value: any): void {
-  const keys = path.split('.')
-  const lastKey = keys.pop()!
-  let current = obj
-  
-  for (const key of keys) {
-    if (!(key in current) || typeof current[key] !== 'object') {
-      current[key] = {}
+    const keys = path.split(".");
+    const lastKey = keys.pop()!;
+    let current = obj;
+
+    for (const key of keys) {
+        if (!(key in current) || typeof current[key] !== "object") {
+            current[key] = {};
+        }
+        current = current[key];
     }
-    current = current[key]
-  }
-  
-  current[lastKey] = value
+
+    current[lastKey] = value;
 }
 
 /**
@@ -107,26 +107,40 @@ export function objectSet(obj: any, path: string, value: any): void {
  * merge({ a: 1 }, { b: 2 }, { c: 3 }) // { a: 1, b: 2, c: 3 }
  */
 export function objectMerge<T extends object>(target: T, ...sources: Partial<T>[]): T {
-  for (const source of sources) {
-    for (const key in source) {
-      if (source.hasOwnProperty(key)) {
-        const sourceValue = source[key]
-        const targetValue = (target as any)[key]
-        
-        if (
-          sourceValue &&
-          typeof sourceValue === 'object' &&
-          !Array.isArray(sourceValue) &&
-          targetValue &&
-          typeof targetValue === 'object' &&
-          !Array.isArray(targetValue)
-        ) {
-          ;(target as any)[key] = objectMerge(targetValue, sourceValue)
-        } else {
-          ;(target as any)[key] = sourceValue
+    for (const source of sources) {
+        for (const key in source) {
+            if (source.hasOwnProperty(key)) {
+                const sourceValue = source[key];
+                const targetValue = (target as any)[key];
+
+                if (
+                    sourceValue &&
+                    typeof sourceValue === "object" &&
+                    !Array.isArray(sourceValue) &&
+                    targetValue &&
+                    typeof targetValue === "object" &&
+                    !Array.isArray(targetValue)
+                ) {
+                    (target as any)[key] = objectMerge(targetValue, sourceValue);
+                } else {
+                    (target as any)[key] = sourceValue;
+                }
+            }
         }
-      }
     }
-  }
-  return target
+    return target;
 }
+
+/**
+ * 清理对象中的 null 值
+ */
+export const cleanNull = (obj: any, recursive = false) => {
+    for (const key in obj) {
+        if (obj[key] === null) {
+            delete obj[key];
+        } else if (recursive && typeof obj[key] === "object") {
+            cleanNull(obj[key], true);
+        }
+    }
+    return obj;
+};

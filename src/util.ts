@@ -85,7 +85,7 @@ export const isPromise = (obj: any): boolean => {
     return obj && typeof obj === "object" && obj.then && typeof obj.then === "function";
 };
 
-export const isJSON = (json: string): boolean => {
+export const isJson = (json: string): boolean => {
     let is_json = false;
     try {
         JSON.parse(json);
@@ -110,7 +110,7 @@ export const isFunction = (value: any): boolean => {
 /**
  * 检测是否为 URL（不包含 blob: data: file: 等协议）
  */
-export const isURL = (str: string) => {
+export const isUrl = (str: string) => {
     if (typeof str !== "string" || str.trim() === "") return false;
     // 常见的可作为资源的 URL/路径：http(s)://, //, blob:, data:, file:, 以及以 / 或 ./ ../ 开头的相对路径
     return /^(https?:\/\/|\/\/|\/|\.\.?\/*)/i.test(str);

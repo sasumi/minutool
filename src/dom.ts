@@ -415,6 +415,24 @@ export const rectInLayout = (rect: Dimension, layout: Dimension): boolean => {
 };
 
 /**
+ * 精度位数转小数表示法
+ * @param {Number} precision 精度位数
+ * @returns {Float} 精度小数表示法，如 0.01
+ */
+export const precisionToStep = (precision: number): number => {
+    return Math.pow(10, -precision);
+};
+
+export const fixBaseUrl = (url: string, baseUrl: string): string => {
+    try {
+        const fixedUrl = new URL(url, baseUrl);
+        return fixedUrl.href;
+    } catch {
+        return url;
+    }
+};
+
+/**
  * 创建HTML节点
  * @param {String} html
  * @param {HTMLElement|null} parentNode 父级节点
@@ -475,4 +493,15 @@ export const getBoundingClientRect = (el: HTMLElement, autoFixInvisible = false)
         width: rect.width,
         height: rect.height,
     };
+};
+
+export const buildStyleVars = (vars: Record<string, number | string | undefined>) => {
+    let styles = {} as Record<string, string>;
+    for (let k in vars) {
+        const v = vars[k];
+        if (v !== undefined) {
+            styles[`--${k}`] = `${v}` + (typeof v === "number" ? "px" : "");
+        }
+    }
+    return styles;
 };

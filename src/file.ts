@@ -1,4 +1,4 @@
-import { isURL } from "./util";
+import { isUrl } from "./util";
 
 /**
  * 过滤字符串为合法文件名
@@ -17,7 +17,7 @@ export const sanitizeFileName = (name: string): string => {
         .trim();
 };
 
-export const blobToDataURL = (blob: Blob): Promise<string> =>
+export const blobToDataUri = (blob: Blob): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -31,7 +31,7 @@ export const blobToDataURL = (blob: Blob): Promise<string> =>
  * @param {File|Blob|String} file
  * @returns {Promise<String|null>} 返回 data URL 字符串，失败返回 null
  */
-export const fileToBase64DataURL = async (file: File | Blob | string) => {
+export const fileToBase64DataUri = async (file: File | Blob | string) => {
     if (!file) {
         return null;
     }
@@ -43,19 +43,19 @@ export const fileToBase64DataURL = async (file: File | Blob | string) => {
 
     try {
         // 字符串 URL（http(s)/相对/blob:）
-        if (typeof file === "string" && isURL(file)) {
+        if (typeof file === "string" && isUrl(file)) {
             // fetch -> blob -> dataURL
             const resp = await fetch(file);
             if (!resp.ok) {
                 throw new Error(`Fetch failed: ${resp.status}`);
             }
             const blob = await resp.blob();
-            return await blobToDataURL(blob);
+            return await blobToDataUri(blob);
         }
 
         // File 或 Blob
         if (file instanceof Blob) {
-            return await blobToDataURL(file);
+            return await blobToDataUri(file);
         }
 
         // 不能处理的类型，返回 null

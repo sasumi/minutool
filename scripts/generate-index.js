@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const srcDir = path.join(__dirname, '../src');
+
+// 根据模块名生成注释
+function getCategoryComment(moduleName) {
+  // 首字母大写
+  const capitalized = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+  return `${capitalized} utilities`;
+}
+
+// 解析文件中的所有 export
+function parseExports(filePath) {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const exports = [];
+  
+  // 匹配所有 export 语句
+  const exportRegex = /^export\s+(?:const|function|class|interface|type|enum)\s+(\w+)/gm;
+  let match;
+  
+  while ((match = exportRegex.exec(content)) !== null) {
+    exports.push(match[1]);
+  }
+  
+  // 匹配 export { ... }
+  const namedExportRegex = /export\s+\{([^}]+)\}/g;
+  while ((match = namedExportRegex.exec(content)) !== null) {
+    const names = match[1].split(',').map(name => {
+      const trimmed = name.trim();
+      // 处理 "x as y" 的情况
+      const asMatch = trimmed.match(/(\w+)\s+as\s+(\w+)/);
+      if (asMatch) {
+        return asMatch[2]; // 返回 alias 后的名字
+      }
+      return trimmed;
+    }).filter(Boolean);
+    exports.push(...names);
+  }
+  
+  return [...new Set(exports)]; // 去重
+}
+
+// 生成 index.ts 内容
+function generateIndexContent() {
+  const files = fs.readdirSync(srcDir)
+    .filter(file => file.endsWith('.ts') && file !== 'index.ts')
+    .sort();
+  
+  let content = '';
+  
+  files.forEach(file => {
+    const moduleName = file.replace('.ts', '');
+    const filePath = path.join(srcDir, file);
+    const exports = parseExports(filePath);
+    
+    if (exports.length === 0) return;
+    
+    const categoryComment = getCategoryComment(moduleName);
+    
+    content += `// ${categoryComment}\n`;
+    content += `export {\n`;
+    
+    // 按字母排序并格式化
+    exports.sort().forEach((exp, index) => {
+      // 特殊处理：MD5 模块的导出别名
+      if (moduleName === 'md5' && exp === 'MD5') {
+        content += `  md5 as MD5`;
+      } else {
+        content += `  ${exp}`;
+      }
+      
+      if (index < exports.length - 1) {
+        content += ',\n';
+      } else {
+        content += '\n';
+      }
+    });
+    
+    content += `} from './${moduleName}'\n\n`;
+  });
+  
+  return content.trim() + '\n';
+}
+
+// 主函数
+function main() {
+  try {
+    console.log('🔍 Scanning exports from src files...');
+    
+    const indexContent = generateIndexContent();
+    const indexPath = path.join(srcDir, 'index.ts');
+    
+    fs.writeFileSync(indexPath, indexContent, 'utf-8');
+    
+    console.log('✅ index.ts has been generated successfully!');
+    console.log(`📝 File: ${indexPath}`);
+  } catch (error) {
+    console.error('❌ Error generating index.ts:', error);
+    process.exit(1);
+  }
+}
+
+main();
