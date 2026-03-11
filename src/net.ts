@@ -207,9 +207,7 @@ export const request = (url: string, data: BodyInit | null = null, option: Reque
     }
 
     if (IS_GET && data) {
-        console.log('org url', url);
         url = queryReplace(url, typeof data === "string" ? queryToObj(data) : data);
-        console.log('new url', url);
         data = null;
     }
 
