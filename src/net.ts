@@ -76,17 +76,17 @@ export interface AbortablePromise<T> extends Promise<T> {
 }
 
 /**
- * 使用 Fetch API 实现可中止的请求，支持超时设置
+ * 拓展原生 Fetch API 实现可中止的请求，支持超时设置
  * @param {string} url - 请求 URL
- * @param {any} [options={}] - 请求选项，包括 method、headers、body、timeout 等
+ * @param {RequestInit} [fetchOption={}] - fetch请求选项，包括 method、headers、body 等
+ * @param {number} [timeout=0] - 超时时间，单位毫秒，0 表示不设置超时
  * @returns {AbortablePromise<any>} 返回可中止的 Promise 对象
  * @example
  * const req = abortableFetch('/api/data');
- * req.abort(); // 中止请求
+ * req.abort('cancled'); // 中止请求
  */
-export const abortableFetch = (url: string, options: any = {}): AbortablePromise<any> => {
+export const abortableFetch = (url: string, fetchOption: RequestInit = {}, timeout = 0): AbortablePromise<any> => {
     const controller = new AbortController();
-    const { timeout, ...fetchOptions } = options;
 
     let timeoutId: number | null = null;
     if (timeout) {
@@ -122,16 +122,16 @@ export const abortableFetch = (url: string, options: any = {}): AbortablePromise
         };
 
         // 添加 abort 方法
-        abortablePromise.abort = () => {
+        abortablePromise.abort = (reason?: string) => {
             clearTimer();
-            controller.abort();
+            controller.abort(reason || "Request aborted by user");
         };
 
         return abortablePromise;
     };
 
     const fetchPromise = fetch(url, {
-        ...fetchOptions,
+        ...fetchOption,
         signal: controller.signal,
     })
         .then((res) => {
@@ -146,13 +146,40 @@ export const abortableFetch = (url: string, options: any = {}): AbortablePromise
     return addAbortMethod(fetchPromise);
 };
 
-interface RequestOption {
-    method?: string;
-    headers?: Record<string, string>;
-    ContentType?: string;
-    Accept?: string;
+// 扩展 RequestInit，添加 timeout 和其他自定义属性，timeout 用于设置请求超时时间，其他自定义属性可以直接添加到 headers 中
+interface RequestOption extends RequestInit {
     timeout?: number;
+    [key: string]: any;
 }
+
+const appendHeader = (key: string, value: any, headers: Headers): void => {
+    if (value == null) return;
+    // 将驼峰命名转换为 HTTP 头格式 (例如: ContentType -> content-type)
+    const headerName = key
+        .replace(/([A-Z])/g, "-$1")
+        .replace(/^-/, "")
+        .toLowerCase();
+    headers.set(headerName, String(value));
+};
+
+// 判断属性是否为 RequestInit 的标准属性
+const isRequestInitProp = (key: string): boolean => {
+    return [
+        "method",
+        "headers",
+        "body",
+        "mode",
+        "credentials",
+        "cache",
+        "redirect",
+        "referrer",
+        "referrerPolicy",
+        "integrity",
+        "keepalive",
+        "signal",
+        "window",
+    ].includes(key);
+};
 
 /**
  * 发送 HTTP 请求
@@ -164,19 +191,39 @@ interface RequestOption {
  * request('/api/data', null, {method: 'GET'})
  */
 export const request = (url: string, data: BodyInit | null = null, option: RequestOption): AbortablePromise<Response> => {
-    const { method = "GET", headers = {}, ContentType, Accept, timeout } = option;
-    if (ContentType) {
-        headers["Content-Type"] = ContentType;
+    let { timeout, ...fetchOption } = option;
+    fetchOption = fetchOption || {};
+    fetchOption.method = fetchOption.method || "GET";
+
+    const IS_GET = fetchOption.method.toUpperCase() === "GET";
+
+    const headers = new Headers(fetchOption.headers || {});
+
+    //如果 key 不是RequestInit的属性，则添加到 headers 中
+    for (let key in fetchOption) {
+        if (!isRequestInitProp(key)) {
+            appendHeader(key, fetchOption[key], headers);
+        }
     }
-    if (Accept) {
-        headers["Accept"] = Accept;
+
+    if (IS_GET && data) {
+        console.log('org url', url);
+        url = queryReplace(url, typeof data === "string" ? queryToObj(data) : data);
+        console.log('new url', url);
+        data = null;
     }
-    return abortableFetch(url, {
-        method,
-        headers,
-        body: fixData(data, ContentType),
+
+    return abortableFetch(
+        url,
+        {
+            headers,
+            ...{
+                body: !IS_GET ? fixData(data, headers.get("content-type") || undefined) : undefined,
+            },
+            ...fetchOption,
+        },
         timeout,
-    }).then((response) => {
+    ).then((response) => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
