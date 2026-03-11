@@ -17,6 +17,13 @@ export const sanitizeFileName = (name: string): string => {
         .trim();
 };
 
+/**
+ * 将 Blob 转换为 Data URI
+ * @param {Blob} blob - Blob 对象
+ * @returns {Promise<string>} 返回 Data URI 字符串
+ * @example
+ * blobToDataUri(blob).then(uri => console.log(uri))
+ */
 export const blobToDataUri = (blob: Blob): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -29,10 +36,13 @@ export const blobToDataUri = (blob: Blob): Promise<string> =>
 const FILE_B64_CACHE_DATA: Record<string, string> = {};
 
 /**
- * url 转 Base64Data 数据缓存
- * @param {String} url
- * @param {String|Null} b64Data base64 数据，传入 null 则为读取缓存，这里不是不是base64，而是 base64 data URL
- * @returns {String|Null} 读取缓存时返回 base64 data URL 字符串，未命中返回 null
+ * URL 转 Base64 Data URL 数据缓存
+ * @param {string} url - 文件 URL
+ * @param {string|null} [b64Data=null] - Base64 Data URL 数据，传入 null 则为读取缓存
+ * @returns {string|null} 读取缓存时返回 Base64 Data URL 字符串，未命中返回 null
+ * @example
+ * urlB64DataCache('http://example.com/img.png', dataUrl) // 设置缓存
+ * urlB64DataCache('http://example.com/img.png') // 读取缓存
  */
 export const urlB64DataCache = (url: string, b64Data: string | null = null): string | null => {
     if (b64Data !== null) {
@@ -44,10 +54,12 @@ export const urlB64DataCache = (url: string, b64Data: string | null = null): str
 };
 
 /**
- * 将文件转换为 Base64 data URL
+ * 将文件转换为 Base64 Data URI
  * 支持 File/Blob 对象，或字符串 URL（http(s)/相对/blob:）
- * @param {File|Blob|String} file
- * @returns {Promise<String|null>} 返回 data URL 字符串，失败返回 null
+ * @param {File|Blob|string} file - 文件对象或 URL 字符串
+ * @returns {Promise<string|null>} 返回 Data URL 字符串，失败返回 null
+ * @example
+ * fileToBase64DataUri(file).then(uri => console.log(uri))
  */
 export const fileToBase64DataUri = async (file: File | Blob | string) => {
     if (!file) {
@@ -86,8 +98,11 @@ export const fileToBase64DataUri = async (file: File | Blob | string) => {
 
 /**
  * 下载文件
- * @param {String} uri
- * @param {String} fileName
+ * @param {string} uri - 文件 URI（支持 Data URI 和普通 URL）
+ * @param {string} fileName - 保存的文件名
+ * @returns {void}
+ * @example
+ * downloadFile('data:text/plain;base64,SGVsbG8=', 'hello.txt')
  */
 export const downloadFile = (uri: string, fileName: string) => {
     const link = document.createElement("a");

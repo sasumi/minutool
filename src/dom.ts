@@ -2,21 +2,33 @@ import { guid } from "./util";
 import { between } from "./math";
 
 /**
- * 隐藏节点（通过设置display:none方式）
- * @param {Node|String} dom
+ * 隐藏节点（通过设置 display:none 方式）
+ * @param {HTMLElement|string} dom - DOM 元素或选择器
+ * @returns {void}
+ * @example
+ * hide('#myElement')
  */
 export const hide = (dom: HTMLElement | string): void => {
     findOne(dom).style.display = "none";
 };
 /**
- * 显示节点（通过设置display为空方式）
- * @param {HTMLElement} dom
- * @param dom
+ * 显示节点（通过设置 display 为空方式）
+ * @param {HTMLElement|string} dom - DOM 元素或选择器
+ * @returns {void}
+ * @example
+ * show('#myElement')
  */
 export const show = (dom: HTMLElement | string): void => {
     findOne(dom).style.display = "";
 };
 
+/**
+ * 移除 DOM 节点
+ * @param {HTMLElement|string} dom - DOM 元素或选择器
+ * @returns {Node|null} 返回被移除的节点，如果未找到返回 null
+ * @example
+ * remove('#myElement')
+ */
 export const remove = (dom: HTMLElement | string): Node | null => {
     let el = findOne(dom);
     return el && el.parentNode && el.parentNode.removeChild(el);
@@ -92,19 +104,23 @@ export const lockElementInteraction = (el: HTMLElement | string, payload: (reset
     payload(reset);
 };
 /**
- * 获取当前节点在父结点中的索引号
- * @param node
- * @return {number}
+ * 获取当前节点在父节点中的索引号
+ * @param {HTMLElement} node - DOM 节点
+ * @returns {number} 返回索引号，如果没有父节点返回 -1
+ * @example
+ * nodeIndex(element) // 2
  */
 export const nodeIndex = (node: HTMLElement): number => {
     return node.parentNode ? Array.prototype.indexOf.call(node.parentNode.children, node) : -1;
 };
 
 /**
- * 通过选择器查找子节点（强制添加 :scope来约束必须是子节点）
- * @param {String} selector
- * @param {Node} parent
- * @return {Node[]}
+ * 通过选择器查找子节点（强制添加 :scope 来约束必须是子节点）
+ * @param {string|HTMLElement|HTMLElement[]|NodeList|HTMLCollection} selector - 选择器或 DOM 元素
+ * @param {Document|HTMLElement} [parent=document] - 父节点，默认为 document
+ * @returns {HTMLElement[]} 返回查找到的所有元素数组
+ * @example
+ * findAll('.item', container)
  */
 export const findAll = (
     selector: string | HTMLElement | HTMLElement[] | NodeList | HTMLCollection,
@@ -132,17 +148,22 @@ export const findAll = (
 };
 
 /**
- * @param {String|Object} selector 选择器，如果是Object，则直接返回Object
- * @param {Node} parent
- * @return {Node}
+ * 通过选择器查找单个节点
+ * @param {string|HTMLElement} selector - 选择器，如果是 HTMLElement，则直接返回
+ * @param {Document|HTMLElement} [parent=document] - 父节点，默认为 document
+ * @returns {HTMLElement} 返回查找到的元素
+ * @example
+ * findOne('.item')
  */
 export const findOne = (selector: string | HTMLElement, parent: Document | HTMLElement = document): HTMLElement => {
     return typeof selector === "string" ? (parent.querySelector(selector) as HTMLElement) : selector;
 };
 /**
- * get node xpath
- * @param el
- * @return {String}
+ * 获取节点的 XPath
+ * @param {HTMLElement|null} el - DOM 元素
+ * @returns {string|null} 返回 XPath 字符串，失败返回 null
+ * @example
+ * getNodeXPath(element) // '/html[1]/body[1]/div[1]'
  */
 export const getNodeXPath = (el: HTMLElement | null): string | null => {
     let allNodes = document.getElementsByTagName("*");
@@ -176,9 +197,12 @@ export const getNodeXPath = (el: HTMLElement | null): string | null => {
 };
 /**
  * 监听节点树变更
- * @param {Node} dom
- * @param {Function} callback
- * @param {Boolean} includeElementChanged 是否包含表单元素的值变更
+ * @param {HTMLElement} dom - 要监听的 DOM 节点
+ * @param {Function} callback - 回调函数
+ * @param {boolean} [includeElementChanged=true] - 是否包含表单元素的值变更
+ * @returns {void}
+ * @example
+ * onDomTreeChange(container, () => console.log('changed'))
  */
 export const onDomTreeChange = (dom: HTMLElement, callback: () => void, includeElementChanged: boolean = true): void => {
     const PRO_KEY = "ON_DOM_TREE_CHANGE_BIND_" + guid();
@@ -201,14 +225,14 @@ export const onDomTreeChange = (dom: HTMLElement, callback: () => void, includeE
 };
 
 /**
- * 更低占用执行mutation监听，支持指定最小间隔时间执行回调
- * @param {Node} dom
- * @param {Object} option
- * @param {Boolean} option.attributes
- * @param {Boolean} option.subtree
- * @param {Boolean} option.childList
- * @param {Function} payload
- * @param {Number} minInterval 执行回调最小间隔时间（毫秒）
+ * 更低占用执行 mutation 监听，支持指定最小间隔时间执行回调
+ * @param {HTMLElement} dom - 要监听的 DOM 节点
+ * @param {MutationObserverInit} option - MutationObserver 配置选项
+ * @param {Function} payload - 回调函数，接收 MutationObserver 实例作为参数
+ * @param {number} [minInterval=10] - 执行回调最小间隔时间（毫秒）
+ * @returns {void}
+ * @example
+ * mutationEffective(dom, {attributes: true, childList: true}, (obs) => console.log('changed'))
  */
 export const mutationEffective = (dom: HTMLElement, option: MutationObserverInit, payload: (obs: MutationObserver) => void, minInterval: number = 10): void => {
     let last_queue_time = 0;
@@ -294,9 +318,11 @@ export const keepRectInContainer = (
 
 /**
  * 矩形相交（包括边重叠情况）
- * @param {Object} rect1
- * @param {Object} rect2
- * @returns {boolean}
+ * @param {Dimension} rect1 - 第一个矩形对象
+ * @param {Dimension} rect2 - 第二个矩形对象
+ * @returns {boolean} 如果两个矩形相交返回 true，否则返回 false
+ * @example
+ * rectAssoc({left: 0, top: 0, width: 100, height: 100}, {left: 50, top: 50, width: 100, height: 100}) // true
  */
 export const rectAssoc = (rect1: Dimension, rect2: Dimension): boolean => {
     if (rect1.left <= rect2.left) {
@@ -316,6 +342,13 @@ export const rectAssoc = (rect1: Dimension, rect2: Dimension): boolean => {
     }
 };
 
+/**
+ * 检测元素是否可聚焦
+ * @param {HTMLElement} el - DOM 元素
+ * @returns {boolean} 如果元素可聚焦返回 true，否则返回 false
+ * @example
+ * isFocusable(inputElement) // true
+ */
 export const isFocusable = (el: HTMLElement) => {
     if (!el) return false;
     if (el.tabIndex >= 0) return true;
@@ -329,9 +362,12 @@ export const isFocusable = (el: HTMLElement) => {
 let _c: Record<string, Promise<void>> = {};
 
 /**
- * 挂载css文件
- * @param {String} file
- * @param {Boolean} forceReload 是否强制重新挂载，缺省不重复挂载
+ * 挂载 CSS 文件
+ * @param {string} file - CSS 文件路径
+ * @param {boolean} [forceReload=false] - 是否强制重新挂载，缺省不重复挂载
+ * @returns {Promise<void>} 返回 Promise，加载完成后 resolve
+ * @example
+ * loadCss('/styles/theme.css')
  */
 export const loadCss = (file: string, forceReload: boolean = false): Promise<void> => {
     if (!forceReload && file in _c) {
@@ -353,10 +389,12 @@ export const loadCss = (file: string, forceReload: boolean = false): Promise<voi
 };
 
 /**
- * 加载script脚本
- * @param {String} src 脚本地址
- * @param {Boolean} forceReload 是否强制重新加载，缺省为去重加载
- * @return {Promise}
+ * 加载 Script 脚本
+ * @param {string} src - 脚本地址
+ * @param {boolean} [forceReload=false] - 是否强制重新加载，缺省为去重加载
+ * @returns {Promise<void>} 返回 Promise，加载完成后 resolve
+ * @example
+ * loadScript('/scripts/lib.js')
  */
 export const loadScript = (src: string, forceReload: boolean = false): Promise<void> => {
     if (!forceReload && src in _c) {
@@ -377,10 +415,11 @@ export const loadScript = (src: string, forceReload: boolean = false): Promise<v
 };
 
 /**
- * 获取对象宽、高
- * 通过设置 visibility 方式进行获取
- * @param {HTMLElement} dom
- * @return {{width: number, height: number}}
+ * 获取对象宽、高（通过设置 visibility 方式进行获取）
+ * @param {HTMLElement} dom - DOM 元素
+ * @returns {{width: number, height: number}} 返回元素的宽度和高度
+ * @example
+ * getDomDimension(element) // {width: 100, height: 50}
  */
 export const getDomDimension = (dom: HTMLElement): { width: number; height: number } => {
     let org_visibility = dom.style.visibility;
@@ -398,10 +437,12 @@ export const getDomDimension = (dom: HTMLElement): { width: number; height: numb
 
 /**
  * 在头部插入样式
- * @param {String} styleSheetStr 样式代码
- * @param {String} id 样式ID，如果提供ID，将会检测是否已经插入，可以避免重复插入
- * @param {Document} doc 文档上下文
- * @return {HTMLStyleElement}
+ * @param {string} styleSheetStr - 样式代码
+ * @param {string} [id=''] - 样式 ID，如果提供 ID，将会检测是否已经插入，可以避免重复插入
+ * @param {Document} [doc=document] - 文档上下文
+ * @returns {HTMLStyleElement|null} 返回创建的 style 元素
+ * @example
+ * insertStyleSheet('.test { color: red; }', 'my-style')
  */
 export const insertStyleSheet = (styleSheetStr: string, id: string = "", doc: Document = document): HTMLStyleElement | null => {
     if (id && doc.querySelector(`#${id}`)) {
@@ -418,9 +459,11 @@ export const insertStyleSheet = (styleSheetStr: string, id: string = "", doc: Do
 
 /**
  * 检测矩形是否在指定布局内部
- * @param rect
- * @param layout
- * @returns {*}
+ * @param {Dimension} rect - 要检测的矩形
+ * @param {Dimension} layout - 布局矩形
+ * @returns {boolean} 如果矩形在布局内部返回 true，否则返回 false
+ * @example
+ * rectInLayout(rect, layout) // true
  */
 export const rectInLayout = (rect: Dimension, layout: Dimension): boolean => {
     return (
@@ -433,13 +476,23 @@ export const rectInLayout = (rect: Dimension, layout: Dimension): boolean => {
 
 /**
  * 精度位数转小数表示法
- * @param {Number} precision 精度位数
- * @returns {Float} 精度小数表示法，如 0.01
+ * @param {number} precision - 精度位数
+ * @returns {number} 精度小数表示法，如 0.01
+ * @example
+ * precisionToStep(2) // 0.01
  */
 export const precisionToStep = (precision: number): number => {
     return Math.pow(10, -precision);
 };
 
+/**
+ * 修复基本 URL（将相对路径转换为绝对 URL）
+ * @param {string} url - 要修复的 URL
+ * @param {string} baseUrl - 基本 URL
+ * @returns {string} 返回修复后的 URL
+ * @example
+ * fixBaseUrl('/path', 'https://example.com') // 'https://example.com/path'
+ */
 export const fixBaseUrl = (url: string, baseUrl: string): string => {
     try {
         const fixedUrl = new URL(url, baseUrl);
@@ -450,10 +503,12 @@ export const fixBaseUrl = (url: string, baseUrl: string): string => {
 };
 
 /**
- * 创建HTML节点
- * @param {String} html
- * @param {HTMLElement|null} parentNode 父级节点
- * @returns {HTMLElement|HTMLElement[]}
+ * 创建 HTML 节点
+ * @param {string} html - HTML 字符串
+ * @param {HTMLElement|null} [parentNode=null] - 父级节点，如果提供则自动添加到父节点
+ * @returns {Node|Node[]} 返回创建的节点，单个或多个
+ * @example
+ * createDomByHtml('<div>Hello</div>')
  */
 export const createDomByHtml = (html: string, parentNode: HTMLElement | null = null): Node | Node[] => {
     let tpl = document.createElement("template");
@@ -480,9 +535,12 @@ interface RectObject {
 }
 
 /**
- * 获取元素的位置(相对于视口)
- * @param {HTMLElement} el
- * @returns
+ * 获取元素的位置（相对于视口）
+ * @param {HTMLElement} el - DOM 元素
+ * @param {boolean} [autoFixInvisible=false] - 是否自动修正隐藏元素无法测量的 bug
+ * @returns {RectObject} 返回元素的位置和尺寸信息
+ * @example
+ * getBoundingClientRect(element) // {top: 100, left: 50, width: 200, height: 100, ...}
  */
 export const getBoundingClientRect = (el: HTMLElement, autoFixInvisible = false): RectObject => {
     if (!el) {
@@ -512,6 +570,13 @@ export const getBoundingClientRect = (el: HTMLElement, autoFixInvisible = false)
     };
 };
 
+/**
+ * 构建 CSS 变量对象（自动添加 -- 前缀和 px 单位）
+ * @param {Record<string, number|string|undefined>} vars - CSS 变量对象
+ * @returns {Record<string, string>} 返回格式化后的 CSS 变量对象
+ * @example
+ * buildStyleVars({width: 100, color: 'red'}) // {'--width': '100px', '--color': 'red'}
+ */
 export const buildStyleVars = (vars: Record<string, number | string | undefined>) => {
     let styles = {} as Record<string, string>;
     for (let k in vars) {

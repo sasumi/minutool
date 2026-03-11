@@ -1,3 +1,12 @@
+export const MIME_JSON = "application/json";
+
+/**
+ * 将 URL 查询字符串转换为对象
+ * @param {string} query - 查询字符串
+ * @returns {Record<string, string>} 返回键值对对象
+ * @example
+ * queryToObj('name=John&age=30') // {name: 'John', age: '30'}
+ */
 export const queryToObj = (query: string): Record<string, string> => {
     const obj: Record<string, string> = {};
     query
@@ -12,6 +21,14 @@ export const queryToObj = (query: string): Record<string, string> => {
     return obj;
 };
 
+/**
+ * 替换 URL 中的查询参数
+ * @param {string} url - 原始 URL
+ * @param {Record<string, any>} newQuery - 新的查询参数对象
+ * @returns {string} 返回更新后的 URL
+ * @example
+ * queryReplace('http://example.com?a=1', {b: 2}) // 'http://example.com?a=1&b=2'
+ */
 export const queryReplace = (url: string, newQuery: Record<string, any>): string => {
     const [baseUrl, queryString] = url.split("?");
     const currentQuery = queryString ? queryToObj(queryString) : {};
@@ -20,6 +37,13 @@ export const queryReplace = (url: string, newQuery: Record<string, any>): string
     return `${baseUrl}?${newQueryString}`;
 };
 
+/**
+ * 将对象转换为 URL 查询字符串
+ * @param {Record<string, any>} data - 数据对象
+ * @returns {string} 返回查询字符串
+ * @example
+ * objToQuery({name: 'John', age: 30}) // 'name=John&age=30'
+ */
 export const objToQuery = (data: Record<string, any>): string => {
     if (typeof data === "undefined" || typeof data !== "object") {
         return data;
@@ -53,9 +77,12 @@ export interface AbortablePromise<T> extends Promise<T> {
 
 /**
  * 使用 Fetch API 实现可中止的请求，支持超时设置
- * @param {String} url 请求 URL
- * @param {Object} options 请求选项，包括 method、headers、body、timeout 等
- * @returns {AbortablePromise} 可中止的 Promise 对象
+ * @param {string} url - 请求 URL
+ * @param {any} [options={}] - 请求选项，包括 method、headers、body、timeout 等
+ * @returns {AbortablePromise<any>} 返回可中止的 Promise 对象
+ * @example
+ * const req = abortableFetch('/api/data');
+ * req.abort(); // 中止请求
  */
 const abortableFetch = (url: string, options: any = {}): AbortablePromise<any> => {
     const controller = new AbortController();
@@ -98,7 +125,16 @@ interface RequestOption {
     timeout?: number;
 }
 
-export const request = (url: string, data: BodyInit | null = null, option: RequestOption) => {
+/**
+ * 发送 HTTP 请求
+ * @param {string} url - 请求 URL
+ * @param {BodyInit|null} [data=null] - 请求数据
+ * @param {RequestOption} option - 请求选项
+ * @returns {AbortablePromise<Response>} 返回可中止的 Promise
+ * @example
+ * request('/api/data', null, {method: 'GET'})
+ */
+export const request = (url: string, data: BodyInit | null = null, option: RequestOption): AbortablePromise<Response> => {
     const { method = "GET", headers = {}, ContentType, Accept, timeout } = option;
     if (ContentType) {
         headers["Content-Type"] = ContentType;
@@ -116,24 +152,45 @@ export const request = (url: string, data: BodyInit | null = null, option: Reque
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response;
-    });
+    }) as AbortablePromise<Response>;
 };
 
 /**
- * 发送 JSON 请求并获取 JSON 响应
- * @param url 请求 URL
- * @param data 请求数据
- * @param option 请求选项
- * @returns 返回解析后的 JSON 数据
+ * 发送 GET 请求并获取 JSON 响应
+ * @param {string} url - 请求 URL
+ * @param {any} [data=null] - 请求数据
+ * @param {RequestOption} [option={}] - 请求选项
+ * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @example
+ * getJson('/api/users').then(data => console.log(data))
  */
 export const getJson = (url: string, data: any = null, option: RequestOption = {}) => {
-    return request(url, data, { ...option, ContentType: "application/json", Accept: "application/json" }).then((response) => response.json());
+    return request(url, data, { ...option, ContentType: MIME_JSON, Accept: MIME_JSON }).then((response) => response.json());
 };
 
+/**
+ * 发送 POST 请求并获取 JSON 响应
+ * @param {string} url - 请求 URL
+ * @param {any} [data=null] - 请求数据
+ * @param {RequestOption} [option={}] - 请求选项
+ * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @example
+ * postJson('/api/users', {name: 'John'}).then(data => console.log(data))
+ */
 export const postJson = (url: string, data: any = null, option: RequestOption = {}) => {
-    return request(url, data, { ...option, method: "POST", ContentType: "application/json", Accept: "application/json" }).then((response) => response.json());
+    return request(url, data, { ...option, method: "POST", ContentType: MIME_JSON, Accept: MIME_JSON }).then((response) => response.json());
 };
 
+/**
+ * 上传文件
+ * @param {string} url - 请求 URL
+ * @param {Record<string, File>} fileMap - 文件对象映射
+ * @param {any} [data=null] - 额外的表单数据
+ * @param {RequestOption} [option={}] - 请求选项
+ * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @example
+ * postFiles('/api/upload', {avatar: fileObject})
+ */
 export const postFiles = (url: string, fileMap: Record<string, File>, data: any = null, option: RequestOption = {}) => {
     const formData = new FormData();
     Object.keys(fileMap).forEach((key) => {

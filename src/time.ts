@@ -33,10 +33,13 @@ export const WEEK_DAY_NAMES_SHORT_CN = ["日", "一", "二", "三", "四", "五"
 export const WEEK_DAY_NAMES_CN = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
 /**
- * 计时（该方法采用timeout方式，不够精准
- * @param {Number} timeout
- * @param {Function} tickFunc
- * @param {Function} onFinish
+ * 倒计时函数（该方法采用 setTimeout 方式，不够精准）
+ * @param {number} timeout - 倒计时总秒数
+ * @param {Function} [tickFunc] - 每秒回调函数，接收剩余秒数作为参数
+ * @param {Function} [onFinish] - 倒计时结束回调函数
+ * @returns {void}
+ * @example
+ * countDown(10, (sec) => console.log(sec), () => console.log('done'))
  */
 export const countDown = (timeout: number, tickFunc?: (timeout: number) => void, onFinish?: () => void) => {
     let loop = () => {
@@ -50,6 +53,13 @@ export const countDown = (timeout: number, tickFunc?: (timeout: number) => void,
     loop();
 };
 
+/**
+ * 毫秒转换为“时分秒前”格式
+ * @param {number} ms - 毫秒数
+ * @returns {string} 返回格式化后的字符串
+ * @example
+ * msToHMS(3661000) // '1小时0分钟1秒前'
+ */
 export const msToHMS = (ms: number) => {
     if (!ms || ms < 10) {
         return "刚刚";
@@ -245,10 +255,12 @@ const PHP_DATE_CHAR_MAP: Record<string, (dateObj: Date) => string | number | boo
 };
 
 /**
- * 格式化日期（以PHP方式格式化）
- * @param {String} format
- * @param {Object,Number,String} date 日期，可以是日期对象、毫秒数或者日期字符串，缺省为今天
- * @return {String}
+ * 格式化日期（以 PHP 方式格式化）
+ * @param {string} format - 格式化字符串（支持 PHP date 函数的格式）
+ * @param {Date|number|string|null} [date=null] - 日期，可以是日期对象、毫秒数或者日期字符串，缺省为今天
+ * @returns {string} 返回格式化后的日期字符串
+ * @example
+ * formatDate('Y-m-d H:i:s') // '2024-03-11 15:30:00'
  */
 export const formatDate = function (format: string, date: Date | number | string | null = null): string {
     let dateObj = null;
@@ -262,6 +274,13 @@ export const formatDate = function (format: string, date: Date | number | string
     });
 };
 
+/**
+ * 获取日期所在周数（ISO 8601 标准）
+ * @param {Date} date - 日期对象
+ * @returns {number} 返回周数
+ * @example
+ * getWeekNumber(new Date('2024-03-11')) // 11
+ */
 export const getWeekNumber = (date: Date): number => {
     return formatDate("W", date) as unknown as number;
 }

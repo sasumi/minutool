@@ -6,9 +6,11 @@ export const STAND_DPI = 96;
 
 /**
  * 毫米转换成像素
- * @param {float} dimension
- * @param {int} dpi
- * @returns int
+ * @param {number} dimension - 毫米值
+ * @param {number} [dpi=STAND_DPI] - DPI 值，默认为标准 DPI (96)
+ * @returns {number} 返回像素值
+ * @example
+ * mmToPx(25.4) // 96
  */
 export const mmToPx = (dimension: number, dpi: number = STAND_DPI): number => {
     let px = (dimension / 25.4) * dpi;
@@ -16,36 +18,53 @@ export const mmToPx = (dimension: number, dpi: number = STAND_DPI): number => {
 };
 
 /**
- * 将 mm 转换为 TWIP
- * @param {*} mm
- * @returns
+ * 将 mm 转换为 TWIP（Twentieth of a Point）
+ * @param {number} mm - 毫米值
+ * @returns {number} 返回 TWIP 值
+ * @example
+ * mmToTwip(1) // 57
  */
 export const mmToTwip = (mm: number): number => Math.round(mm * 56.6929);
 
 /**
- * 将 mm 转换为 磅
- * @param {Number} mm
- * @returns {Number}
+ * 将 mm 转换为磅（Point）
+ * @param {number} mm - 毫米值
+ * @returns {number} 返回磅值
+ * @example
+ * mmToPt(1) // 2.83
  */
 export const mmToPt = (mm: number): number => mm * 2.83464566929;
 
 /**
- * 将 pt 转换为 mm
- * @param {Number} pt
- * @returns {Number}
+ * 将磅（Point）转换为 mm
+ * @param {number} pt - 磅值
+ * @returns {number} 返回毫米值
+ * @example
+ * ptToMm(2.83) // 1
  */
 export const ptToMm = (pt: number): number => pt / 2.83464566929;
 
 /**
  * 像素转毫米
- * @param {Number} px
- * @param {Number} dpi
- * @returns
+ * @param {number} px - 像素值
+ * @param {number} [dpi=STAND_DPI] - DPI 值，默认为标准 DPI (96)
+ * @returns {number} 返回毫米值
+ * @example
+ * pxToMm(96) // 25.4
  */
 export const pxToMm = (px: number, dpi: number = STAND_DPI): number => {
     return (25.4 * px) / dpi;
 };
 
+/**
+ * 限制数值在指定范围内
+ * @param {number} num - 要限制的数值
+ * @param {number} min - 最小值
+ * @param {number} max - 最大值
+ * @returns {number} 返回限制后的数值
+ * @example
+ * limit(150, 0, 100) // 100
+ */
 export const limit = (num: number, min: number, max: number): number => {
     return Math.min(Math.max(num, min), max);
 }
@@ -103,8 +122,10 @@ export const detectedPrecision = (...numbers: number[]): number => {
 
 /**
  * 计算数字位数
- * @param {Number} n
- * @returns
+ * @param {number} n - 要计算的数字
+ * @returns {number} 返回数字的位数
+ * @example
+ * digitCount(123) // 3
  */
 export const digitCount = (n: number) => {
     n = Math.abs(Number(n)); // 取绝对值，防止负数

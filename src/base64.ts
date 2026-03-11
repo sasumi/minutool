@@ -3,9 +3,11 @@ import { utf8Decode, utf8Encode } from "./string";
 const BASE64_KEY_STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 /**
- * base64 解码
- * @param {string} text
- * @returns {string}
+ * Base64 解码
+ * @param {string} text - Base64 编码的字符串
+ * @returns {string} 解码后的字符串
+ * @example
+ * base64Decode('SGVsbG8=') // 'Hello'
  */
 export const base64Decode = (text: string): string => {
     let t = "";
@@ -34,19 +36,22 @@ export const base64Decode = (text: string): string => {
 };
 
 /**
- * URL 安全模式进行 base64 编码
- * @param {String} text
- * @return {string}
+ * URL 安全模式进行 Base64 编码（替换 + 和 / 为 - 和 _）
+ * @param {string} text - 要编码的字符串
+ * @returns {string} URL 安全的 Base64 编码字符串
+ * @example
+ * base64UrlSafeEncode('test') // URL安全的Base64字符串
  */
 export const base64UrlSafeEncode = (text: string): string => {
     return utf8Encode(text).replace("+", "-").replace("/", "_");
 };
 
 /**
- * text 转 base64
- * @param {String} text
- * @return {string}
- * @constructor
+ * 字符串转 Base64 编码
+ * @param {string} text - 要编码的字符串
+ * @returns {string} Base64 编码后的字符串
+ * @example
+ * Base64Encode('Hello') // 'SGVsbG8='
  */
 export const Base64Encode = (text: string): string => {
     let t = "";
@@ -72,18 +77,20 @@ export const Base64Encode = (text: string): string => {
 };
 
 /**
- * 转换blob数据到base64
- * @param {Blob} blob
- * @returns {Promise<unknown>}
+ * 转换 Blob 数据到 Base64 Data URL
+ * @param {Blob} blob - Blob 对象
+ * @returns {Promise<unknown>} 返回 Base64 Data URL 字符串的 Promise
+ * @example
+ * blobToBase64(blob).then(base64 => console.log(base64))
  */
 export const blobToBase64 = async (blob: Blob): Promise<unknown> => {
     return await _blobToBase64(blob);
 };
 
 /**
- * 转换blob数据到Base64
- * @param {Blob} blob
- * @returns {Promise<unknown>}
+ * 转换 Blob 数据到 Base64 Data URL（内部实现）
+ * @param {Blob} blob - Blob 对象
+ * @returns {Promise<unknown>} 返回 Base64 Data URL 字符串的 Promise
  */
 const _blobToBase64 = (blob: Blob): Promise<unknown> =>
     new Promise((resolve, reject) => {

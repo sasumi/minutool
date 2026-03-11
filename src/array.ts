@@ -1,8 +1,10 @@
 /**
- * array_column
- * @param arr
- * @param col_name
- * @returns {Array}
+ * 从数组中提取指定列的值
+ * @param {T[]} arr - 源数组
+ * @param {keyof T} col_name - 列名（对象的键）
+ * @returns {any[]} 提取的列值数组
+ * @example
+ * arrayColumn([{id: 1, name: 'A'}, {id: 2, name: 'B'}], 'name') // ['A', 'B']
  */
 export const arrayColumn = <T = any>(arr: T[], col_name: keyof T): any[] => {
 	let data: any[] = [];
@@ -13,9 +15,12 @@ export const arrayColumn = <T = any>(arr: T[], col_name: keyof T): any[] => {
 };
 
 /**
- * @param arr
- * @param val
- * @return {string|null}
+ * 查找数组中指定值的索引
+ * @param {T[]} arr - 源数组
+ * @param {T} val - 要查找的值
+ * @returns {string|null} 返回索引字符串，未找到返回 null
+ * @example
+ * arrayIndex(['a', 'b', 'c'], 'b') // '1'
  */
 export const arrayIndex = <T = any>(arr: T[], val: T): string | null => {
 	for(let i in arr){
@@ -29,8 +34,10 @@ export const arrayIndex = <T = any>(arr: T[], val: T): string | null => {
 
 /**
  * 数组去重
- * @param {Array} arr
- * @returns {*}
+ * @param {T[]} arr - 源数组
+ * @returns {T[]} 去重后的数组
+ * @example
+ * arrayDistinct([1, 2, 2, 3, 3, 3]) // [1, 2, 3]
  */
 export const arrayDistinct = <T = any>(arr: T[]): T[] => {
 	let tmpMap = new Map();
@@ -44,11 +51,14 @@ export const arrayDistinct = <T = any>(arr: T[]): T[] => {
 
 
 /**
- * array group
- * @param arr
- * @param by_key
- * @param limit limit one child
- * @returns {*}
+ * 按指定键对数组进行分组
+ * @param {T[]} arr - 源数组
+ * @param {keyof T} by_key - 分组依据的键
+ * @param {boolean} [limit] - 是否限制每组只保留一个元素
+ * @returns {Record<string, T[]> | Record<string, T>} 分组后的对象
+ * @example
+ * arrayGroup([{type: 'A', val: 1}, {type: 'A', val: 2}], 'type')
+ * // { A: [{type: 'A', val: 1}, {type: 'A', val: 2}] }
  */
 export const arrayGroup = <T extends Record<string, any>>(arr: T[], by_key: keyof T, limit?: boolean): Record<string, T[]> | Record<string, T> => {
 	if(!arr || !arr.length){
@@ -74,9 +84,11 @@ export const arrayGroup = <T extends Record<string, any>>(arr: T[], by_key: keyo
 
 
 /**
- * 按照对象 KEY 排序
- * @param {Object} obj
- * @return {{}}
+ * 按照对象的键进行字母顺序排序
+ * @param {T} obj - 源对象
+ * @returns {T} 键排序后的对象
+ * @example
+ * arraySortByKey({c: 3, a: 1, b: 2}) // {a: 1, b: 2, c: 3}
  */
 export const arraySortByKey = <T extends Record<string, any>>(obj: T): T => {
 	return Object.keys(obj).sort().reduce(function(result: Record<string, any>, key: string){
@@ -87,10 +99,12 @@ export const arraySortByKey = <T extends Record<string, any>>(obj: T): T => {
 
 
 /**
- * 数组分块
- * @param {Array} list 数据
- * @param {Number} size 每块大小
- * @return {Array[]}
+ * 将数组分割成指定大小的块
+ * @param {T[]} list - 源数组
+ * @param {number} size - 每块的大小
+ * @returns {T[][]} 分块后的二维数组
+ * @example
+ * arrayChunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
  */
 export const arrayChunk = <T = any>(list: T[], size: number): T[][] => {
 	let len = list.length;
@@ -114,8 +128,10 @@ export const arrayChunk = <T = any>(list: T[], size: number): T[][] => {
 
 /**
  * 从数组末尾开始移除值为 falsy 的元素，直到遇到第一个 truthy 元素
- * @param arr 要处理的数组
- * @returns 处理后的数组
+ * @param {any[]} arr - 要处理的数组
+ * @returns {any[]} 处理后的数组
+ * @example
+ * arrayTrimTail([1, 2, 0, false, null]) // [1, 2]
  */
 export const arrayTrimTail = (arr: any[]) => {
     let lastNonZeroIndex = -1;

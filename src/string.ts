@@ -47,11 +47,13 @@ export const stripSlashes = (str: string): string => {
 };
 
 /**
- * 中英文字符串截取（中文按照2个字符长度计算）
- * @param str
- * @param len
- * @param eclipse_text
- * @returns {*}
+ * 中英文字符串截取（中文按照 2 个字符长度计算）
+ * @param {string} str - 要截取的字符串
+ * @param {number} len - 截取长度
+ * @param {string} [eclipse_text='...'] - 省略符，默认为 '...'
+ * @returns {string} 返回截取后的字符串
+ * @example
+ * cutString('中文English', 6, '...') // '中文E...'
  */
 export const cutString = (str: string, len: number, eclipse_text: string = "..."): string => {
     let r = /[^\x00-\xff]/g;
@@ -122,17 +124,22 @@ export function truncate(str: string, length: number, suffix: string = "..."): s
 }
 
 /**
- * 正则表达式转义
- * @param str
- * @returns {string}
+ * 正则表达式转义（将特殊字符转义）
+ * @param {string} str - 要转义的字符串
+ * @returns {string} 返回转义后的字符串
+ * @example
+ * regQuote('a.b') // 'a\\.b'
  */
 export const regQuote = (str: string): string => {
     return (str + "").replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
 };
 
 /**
- * @param {String} srcStr
- * @return {string}
+ * UTF-8 解码
+ * @param {string} srcStr - 要解码的字符串
+ * @returns {string} 返回解码后的字符串
+ * @example
+ * utf8Decode(encodedStr) // 'decoded string'
  */
 export const utf8Decode = (srcStr: string): string => {
     let t = "";
@@ -160,8 +167,11 @@ export const utf8Decode = (srcStr: string): string => {
 };
 
 /**
- * @param {String} srcStr
- * @returns {string}
+ * UTF-8 编码
+ * @param {string} srcStr - 要编码的字符串
+ * @returns {string} 返回编码后的字符串
+ * @example
+ * utf8Encode('string') // 'encoded string'
  */
 export const utf8Encode = (srcStr: string): string => {
     srcStr = srcStr.replace(/\r\n/g, "n");
@@ -183,9 +193,11 @@ export const utf8Encode = (srcStr: string): string => {
 };
 
 /**
- * 获取u8字符串长度(一个中文字按照3个字数计算)
- * @param str
- * @returns {number}
+ * 获取 UTF-8 字符串长度（一个中文字按照 3 个字数计算）
+ * @param {string} str - 要计算的字符串
+ * @returns {number} 返回字符串长度
+ * @example
+ * getUTF8StrLen('中文') // 6
  */
 export const getUTF8StrLen = (str: string): number => {
     let realLength = 0;
@@ -241,10 +253,12 @@ export const randomWords = (count = 1, letterMax = 8) => {
     return words;
 };
 /**
- * 字符串转成首字母大写
- * @param {String} str
- * @param {Boolean} capitalize_first 是否将第一个单词首字母大写
- * @return {string}
+ * 字符串转成首字母大写（Pascal Case）
+ * @param {string} str - 要转换的字符串
+ * @param {boolean} [capitalize_first=false] - 是否将第一个单词首字母大写
+ * @returns {string} 返回转换后的字符串
+ * @example
+ * strToPascalCase('hello-world', true) // 'HelloWorld'
  */
 export const strToPascalCase = (str: string, capitalize_first: boolean = false): string => {
     let words: string[] = [];
@@ -263,10 +277,12 @@ export const TRIM_RIGHT = 2;
 
 /**
  * 去除字符串首尾指定字符或空白
- * @param {String} str 源字符串
- * @param {String} chars 指定字符，默认为空白
- * @param {Number} dir 方向
- * @returns {*|boolean}
+ * @param {string} str - 源字符串
+ * @param {string} [chars=''] - 指定字符，默认为空白
+ * @param {number} [dir=TRIM_BOTH] - 方向（TRIM_BOTH/TRIM_LEFT/TRIM_RIGHT）
+ * @returns {string} 返回去除后的字符串
+ * @example
+ * trim('__hello__', '_') // 'hello'
  */
 export const trim = (str: string, chars: string = "", dir: number = TRIM_BOTH): string => {
     if (chars.length) {
@@ -280,9 +296,11 @@ export const trim = (str: string, chars: string = "", dir: number = TRIM_BOTH): 
 
 /**
  * 将字符串分割成指定长度的数组
- * @param str 
- * @param size 
- * @returns {string[]}
+ * @param {string} str - 要分割的字符串
+ * @param {number} size - 每段的长度
+ * @returns {string[]} 返回分割后的数组
+ * @example
+ * strChunk('abcdef', 2) // ['ab', 'cd', 'ef']
  */
 export const strChunk = (str: string, size: number): string[] => {
     let ret: string[] = [];

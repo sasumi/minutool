@@ -95,9 +95,11 @@ export const SELF_CLOSING_TAGS = ["AREA", "BASE", "BR", "COL", "EMBED", "HR", "I
 export const REMOVABLE_TAGS = ["STYLE", "COMMENT", "SELECT", "OPTION", "SCRIPT", "TITLE", "HEAD", "BUTTON", "META", "LINK", "PARAM", "SOURCE"];
 
 /**
- * Convert html to plain text
- * @param {String} html
- * @returns {string}
+ * 将 HTML 转换为纯文本（移除所有标签和样式）
+ * @param {string} html - HTML 字符串
+ * @returns {string} 返回纯文本
+ * @example
+ * html2Text('<p>Hello <b>World</b></p>') // 'Hello World'
  */
 export const html2Text = (html: string): string => {
     //remove removable tags
@@ -151,18 +153,22 @@ export const html2Text = (html: string): string => {
 };
 
 /**
- * CSS 选择器转义
- * @param {String} str
- * @returns {String}
+ * CSS 选择器转义（处理特殊字符）
+ * @param {string} str - 要转义的字符串
+ * @returns {string} 转义后的字符串
+ * @example
+ * cssSelectorEscape('my#id') // 'my\\#id'
  */
 export const cssSelectorEscape = (str: string): string => {
     return window.CSS && CSS.escape ? CSS.escape(str) : str.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&");
 };
 
 /**
- * HTML实例转字符串
- * @param {string} entity
- * @returns {string}
+ * HTML 实体转字符串
+ * @param {string} entity - HTML 实体字符串（如 &#72;&#101;&#108;&#108;&#111;）
+ * @returns {string} 返回解码后的字符串
+ * @example
+ * entityToString('&#72;&#101;') // 'He'
  */
 export const entityToString = (entity: string): string => {
     let entities = entity.split(";");
@@ -171,6 +177,13 @@ export const entityToString = (entity: string): string => {
 };
 
 let _helper_div: HTMLDivElement | undefined;
+/**
+ * 解码 HTML 实体（包括 script 和 HTML 标签过滤）
+ * @param {string} str - 包含 HTML 实体的字符串
+ * @returns {string} 返回解码后的字符串
+ * @example
+ * decodeHTMLEntities('&lt;div&gt;') // '<div>'
+ */
 export const decodeHTMLEntities = (str: string): string => {
     if (!_helper_div) {
         _helper_div = document.createElement("div");
@@ -186,8 +199,10 @@ export const decodeHTMLEntities = (str: string): string => {
 
 /**
  * 构建 HTML Input:hidden 标签
- * @param {Object} maps {key:value}
- * @return {string}
+ * @param {Record<string, any>} maps - 键值对对象
+ * @returns {string} 返回 HTML 字符串
+ * @example
+ * buildHtmlHidden({name: 'John', age: 30}) // '<input type="hidden" name="name" value="John"/>...'
  */
 export const buildHtmlHidden = (maps: Record<string, any>): string => {
     let html = "";
@@ -199,11 +214,13 @@ export const buildHtmlHidden = (maps: Record<string, any>): string => {
 };
 
 /**
- * 转义HTML
- * @param {string} str
- * @param {Number} tabSize tab宽度，如果设置为0，表示去除tab
- * @param {Boolean} allowLineBreaker 是否允许换行
- * @returns {string}
+ * 转义 HTML（将特殊字符转换为 HTML 实体）
+ * @param {string} str - 要转义的字符串
+ * @param {number} [tabSize=2] - Tab 宽度，如果设置为 0，表示去除 tab
+ * @param {boolean} [allowLineBreaker=true] - 是否允许换行
+ * @returns {string} 返回转义后的 HTML
+ * @example
+ * escapeHtml('<div>Hello</div>') // '&lt;div&gt;Hello&lt;/div&gt;'
  */
 export const escapeHtml = (str: string, tabSize: number = 2, allowLineBreaker: boolean = true): string => {
     let s = String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -218,9 +235,11 @@ export const escapeHtml = (str: string, tabSize: number = 2, allowLineBreaker: b
 };
 
 /**
- * 反转义HTML
- * @param {String} html
- * @returns {string}
+ * 反转义 HTML（将 HTML 实体转换为字符）
+ * @param {string} html - 包含 HTML 实体的字符串
+ * @returns {string} 返回反转义后的字符串
+ * @example
+ * unescapeHtml('&lt;div&gt;') // '<div>'
  */
 export const unescapeHtml = (html: string): string => {
     return String(html)
@@ -234,10 +253,12 @@ export const unescapeHtml = (html: string): string => {
 };
 
 /**
- * 转义HTML到属性值
- * @param {String} s
- * @param preserveCR
- * @returns {string}
+ * 转义 HTML 到属性值（处理属性中的特殊字符）
+ * @param {string} s - 要转义的字符串
+ * @param {string} [preserveCR=''] - 是否保留回车符
+ * @returns {string} 返回转义后的字符串
+ * @example
+ * escapeAttr('Hello "World"') // 'Hello &quot;World&quot;'
  */
 export const escapeAttr = (s: string, preserveCR: string = ""): string => {
     preserveCR = preserveCR ? "&#13;" : "\n";
@@ -258,6 +279,14 @@ export const escapeAttr = (s: string, preserveCR: string = ""): string => {
     );
 };
 
+/**
+ * 字符串转换为 HTML 实体
+ * @param {string} str - 要转换的字符串
+ * @param {number} [radix] - 进制，为 16 时使用十六进制
+ * @returns {string} 返回 HTML 实体字符串
+ * @example
+ * stringToEntity('AB', 16) // '&#x41;&#x42;'
+ */
 export const stringToEntity = (str: string, radix?: number): string => {
     let arr = str.split("");
     radix = radix || 0;
@@ -265,11 +294,13 @@ export const stringToEntity = (str: string, radix?: number): string => {
 };
 
 /**
- * 高亮文本
- * @param {String} text 文本
- * @param {String} kw 关键字
- * @param {String} replaceTpl 替换模板
- * @returns {void|string|*}
+ * 高亮文本（将关键字用指定模板包裹）
+ * @param {string} text - 原始文本
+ * @param {string} kw - 关键字
+ * @param {string} [replaceTpl='<span class="matched">%s</span>'] - 替换模板，%s 为占位符
+ * @returns {string} 返回高亮后的 HTML
+ * @example
+ * highlightText('Hello World', 'World') // 'Hello <span class="matched">World</span>'
  */
 export const highlightText = (text: string, kw: string, replaceTpl: string = '<span class="matched">%s</span>'): string => {
     if (!kw) {

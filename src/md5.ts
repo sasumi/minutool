@@ -1,7 +1,9 @@
 /**
-  * Add integers, wrapping at 2^32. This uses 16-bit operations internally
-  * to work around bugs in some JS interpreters.
-  */
+ * 将整数相加，在 2^32 处溢出（使用 16 位运算避免 JS 解释器 bug）
+ * @param {number} x - 第一个整数
+ * @param {number} y - 第二个整数
+ * @returns {number} 返回相加结果
+ */
 const safeAdd = (x: number, y: number): number => {
 	let lsw = (x & 0xffff) + (y & 0xffff);
 	let msw = (x >> 16) + (y >> 16) + (lsw >> 16);
@@ -9,8 +11,11 @@ const safeAdd = (x: number, y: number): number => {
 }
 
 /**
-* Bitwise rotate a 32-bit number to the left.
-*/
+ * 将 32 位数字向左旋转
+ * @param {number} num - 要旋转的数字
+ * @param {number} cnt - 旋转的位数
+ * @returns {number} 返回旋转后的结果
+ */
 const bitRotateLeft = (num: number, cnt: number): number => {
 	return (num << cnt) | (num >>> (32 - cnt))
 }
@@ -238,6 +243,15 @@ const hexHMACMD5 = (k: string, d: string): string => {
 	return rstr2hex(rawHMACMD5(k, d))
 }
 
+/**
+ * 计算字符串的 MD5 哈希值
+ * @param {string} string - 要计算 MD5 的字符串
+ * @param {string} [key] - HMAC 密钥（可选）
+ * @param {boolean} [raw] - 是否返回原始字符串，默认返回十六进制字符串
+ * @returns {string} 返回 MD5 哈希值
+ * @example
+ * md5('Hello World') // 'b10a8db164e0754105b7a99be72e3fe5'
+ */
 export const md5 = (string: string, key?: string, raw?: boolean): string => {
 	if(!key){
 		if(!raw){

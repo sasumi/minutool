@@ -2,9 +2,11 @@ import { blobToBase64 } from "./base64";
 import { urlB64DataCache } from "./file";
 
 /**
- * 通过 Image 获取base64数据
- * @param img
- * @returns {string|string|*|string|null}
+ * 通过 Image 元素获取 Base64 数据
+ * @param {HTMLImageElement} img - 图片元素
+ * @returns {string|null} 返回 Base64 Data URL，失败返回 null
+ * @example
+ * imgToBase64(imageElement) // 'data:image/png;base64,...'
  */
 export const imgToBase64 = (img: HTMLImageElement): string | null => {
     if (!img.src) {
@@ -23,9 +25,12 @@ export const imgToBase64 = (img: HTMLImageElement): string | null => {
 };
 
 /**
- * 通过ImageSrc获取base64（网络请求模式）
- * @param src
- * @returns {Promise<unknown>}
+ * 通过图片 URL 获取 Base64（网络请求模式）
+ * @param {string} src - 图片 URL
+ * @param {boolean} [cache=false] - 是否缓存结果
+ * @returns {Promise<unknown>} 返回 Base64 Data URL 的 Promise
+ * @example
+ * srcToBase64('https://example.com/image.png').then(base64 => console.log(base64))
  */
 export const srcToBase64 = (src: string, cache: boolean = false): Promise<unknown> => {
     return new Promise((resolve, reject) => {

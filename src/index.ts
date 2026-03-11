@@ -131,6 +131,7 @@ export type {
   AbortablePromise
 } from './net'
 export {
+  MIME_JSON,
   getJson,
   objToQuery,
   postFiles,

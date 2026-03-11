@@ -1,10 +1,13 @@
 
 /**
- * 设置cookie
- * @param {String} name
- * @param {String} value
- * @param {Number} days
- * @param {String} path
+ * 设置 Cookie
+ * @param {string} name - Cookie 名称
+ * @param {string} value - Cookie 值
+ * @param {number} days - 有效天数，0 表示会话 Cookie
+ * @param {string} [path='/'] - Cookie 路径，默认为根路径
+ * @returns {void}
+ * @example
+ * setCookie('username', 'john', 7)
  */
 export const setCookie = (name: string, value: string, days: number, path: string = '/'): void => {
 	let expires = "";
@@ -17,9 +20,11 @@ export const setCookie = (name: string, value: string, days: number, path: strin
 }
 
 /**
- * 获取cookie
- * @param {String} name
- * @returns {string|null}
+ * 获取 Cookie
+ * @param {string} name - Cookie 名称
+ * @returns {string|null} 返回 Cookie 值，未找到返回 null
+ * @example
+ * getCookie('username') // 'john'
  */
 export const getCookie = (name: string): string | null => {
 	let nameEQ = name + "=";
@@ -33,8 +38,11 @@ export const getCookie = (name: string): string | null => {
 }
 
 /**
- * 删除cookie
- * @param name
+ * 删除 Cookie
+ * @param {string} name - Cookie 名称
+ * @returns {void}
+ * @example
+ * deleteCookie('username')
  */
 export const deleteCookie = (name: string): void => {
 	document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';

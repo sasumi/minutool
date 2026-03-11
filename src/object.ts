@@ -34,10 +34,12 @@ export function isEmptyObject(obj: object): boolean {
 }
 
 /**
- * 对象属性名转换
- * @param {Object} obj
- * @param {Object} mapping
- * @return {{}}
+ * 对象属性名转换（根据映射表重命名属性）
+ * @param {Record<string, any>} obj - 源对象
+ * @param {Record<string, string>} mapping - 属性名映射表
+ * @returns {Record<string, any>} 返回转换后的对象
+ * @example
+ * objectKeyMapping({a: 1, b: 2}, {a: 'x'}) // {x: 1, b: 2}
  */
 export const objectKeyMapping = (obj: Record<string, any>, mapping: Record<string, string>): Record<string, any> => {
     let ret: Record<string, any> = {};
@@ -133,6 +135,11 @@ export function objectMerge<T extends object>(target: T, ...sources: Partial<T>[
 
 /**
  * 清理对象中的 null 值
+ * @param {any} obj - 要清理的对象
+ * @param {boolean} [recursive=false] - 是否递归清理子对象
+ * @returns {any} 返回清理后的对象
+ * @example
+ * cleanNull({a: 1, b: null, c: {d: null}}, true) // {a: 1, c: {}}
  */
 export const cleanNull = (obj: any, recursive = false) => {
     for (const key in obj) {
