@@ -571,18 +571,20 @@ export const getBoundingClientRect = (el: HTMLElement, autoFixInvisible = false)
 };
 
 /**
- * 构建 CSS 变量对象（自动添加 -- 前缀和 px 单位）
+ * 构建 CSS 变量对象
  * @param {Record<string, number|string|undefined>} vars - CSS 变量对象
  * @returns {Record<string, string>} 返回格式化后的 CSS 变量对象
  * @example
- * buildStyleVars({width: 100, color: 'red'}) // {'--width': '100px', '--color': 'red'}
+ * buildStyleVars({width: '100px', color: 'red', text:'"hello"'}) 
+ * 输出 // {'--width': '100px', '--color': 'red', '--text': '"hello"'}
+ * 实际样式：style="--width: 100px; --color: red; --text: \"hello\";"
  */
 export const buildStyleVars = (vars: Record<string, number | string | undefined>) => {
     let styles = {} as Record<string, string>;
     for (let k in vars) {
         const v = vars[k];
-        if (v !== undefined) {
-            styles[`--${k}`] = `${v}` + (typeof v === "number" ? "px" : "");
+        if (v !== undefined && v !== null) {
+            styles[`--${k}`] = `${v}`;
         }
     }
     return styles;
