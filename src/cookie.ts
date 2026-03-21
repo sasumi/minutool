@@ -1,4 +1,3 @@
-
 /**
  * 设置 Cookie
  * @param {string} name - Cookie 名称
@@ -11,19 +10,19 @@
  * setCookie('username', 'john', 7)
  * setCookie('username', 'john', 7, '/', '.example.com')
  */
-export const setCookie = (name: string, value: string, days: number, path: string = '/', domain?: string): void => {
-	let expires = "";
-	if(days){
-		let date = new Date();
-		date.setTime(Date.now() + (days * 24 * 60 * 60 * 1000));
-		expires = "; expires=" + date.toUTCString();
-	}
-	let cookieString = name + "=" + (value || "") + expires + "; path=" + path;
-	if (domain) {
-		cookieString += "; domain=" + domain;
-	}
-	document.cookie = cookieString;
-}
+export const setCookie = (name: string, value: string, days: number, path: string = "/", domain?: string): void => {
+    let expires = "";
+    if (days) {
+        let date = new Date();
+        date.setTime(Date.now() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    let cookieString = name + "=" + (value || "") + expires + "; path=" + path;
+    if (domain) {
+        cookieString += "; domain=" + domain;
+    }
+    document.cookie = cookieString;
+};
 
 /**
  * 获取 Cookie
@@ -33,15 +32,15 @@ export const setCookie = (name: string, value: string, days: number, path: strin
  * getCookie('username') // 'john'
  */
 export const getCookie = (name: string): string | null => {
-	let nameEQ = name + "=";
-	let ca = document.cookie.split(';');
-	for(let i = 0; i < ca.length; i++){
-		let c = ca[i];
-		while(c.charAt(0) === ' ') c = c.substring(1, c.length);
-		if(c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-	}
-	return null;
-}
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === " ") c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+};
 
 /**
  * 删除 Cookie
@@ -53,10 +52,25 @@ export const getCookie = (name: string): string | null => {
  * deleteCookie('username')
  * deleteCookie('username', '/', '.example.com')
  */
-export const deleteCookie = (name: string, path: string = '/', domain?: string): void => {
-	let cookieString = name + '=; Path=' + path + '; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-	if (domain) {
-		cookieString += ' Domain=' + domain + ';';
-	}
-	document.cookie = cookieString;
-}
+export const deleteCookie = (name: string, path: string = "/", domain?: string): void => {
+    let cookieString = name + "=; Path=" + path + "; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    if (domain) {
+        cookieString += " Domain=" + domain + ";";
+    }
+    document.cookie = cookieString;
+};
+
+/**
+ * 删除 Cookie 在所有路径和子域名下的所有实例
+ * @param {string} name - Cookie 名称
+ * @param {string} [domain] - Cookie 域名，默认为当前域名
+ */
+export const deleteCookieAllPaths = (name: string, domain?: string): void => {
+    const parts = (domain || location?.hostname).split(".");
+    while (parts.length > 1) {
+        deleteCookie(name, "/", parts.join("."));
+        deleteCookie(name, "/", "." + parts.join("."));
+        parts.shift();
+    }
+    deleteCookie(name);
+};
