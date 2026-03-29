@@ -30,6 +30,7 @@ export {
 // Cookie utilities
 export {
   deleteCookie,
+  deleteCookieAllPaths,
   getCookie,
   setCookie
 } from './cookie'

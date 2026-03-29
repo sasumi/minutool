@@ -153,6 +153,17 @@ export const html2Text = (html: string): string => {
 };
 
 /**
+ * 将纯文本转换为 HTML（转义特殊字符并处理换行）
+ * @param {string} text - 纯文本字符串
+ * @returns {string} 返回 HTML 字符串
+ * @example
+ * text2Html('Hello\nWorld') // 'Hello<br/>World'
+ */
+export const text2Html = (text: string): string => {
+    return escapeHtml(text, 0, false).replace(/\n/g, "<br/>");
+};
+
+/**
  * CSS 选择器转义（处理特殊字符）
  * @param {string} str - 要转义的字符串
  * @returns {string} 转义后的字符串
@@ -251,6 +262,75 @@ export const unescapeHtml = (html: string): string => {
         .replace(/&amp;/g, "&")
         .replace(/<br.*>/, "\n");
 };
+
+function markdown2Html(md: string): string {
+    if (!md) {
+        return "";
+    }
+
+    let html = md;
+
+    // 转义 HTML（基础防 XSS）
+    html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // ===== 标题 =====
+    html = html.replace(/^###### (.*$)/gim, "<h6>$1</h6>");
+    html = html.replace(/^##### (.*$)/gim, "<h5>$1</h5>");
+    html = html.replace(/^#### (.*$)/gim, "<h4>$1</h4>");
+    html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+    html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+    html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+    // ===== 粗体 / 斜体 =====
+    html = html.replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>");
+    html = html.replace(/\*(.*?)\*/gim, "<em>$1</em>");
+
+    // ===== 行内代码 =====
+    html = html.replace(/`(.*?)`/gim, "<code>$1</code>");
+
+    // ===== 图片 =====
+    html = html.replace(/!\[(.*?)\]\((.*?)\)/gim, '<img src="$2" alt="$1" />');
+
+    // ===== 链接 =====
+    html = html.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank">$1</a>');
+
+    // ===== 表格（简单版）=====
+    html = html.replace(/((\|.*\|\n)+)/g, (match) => {
+        const rows = match.trim().split("\n");
+
+        // 至少3行才认为是表格（header + 分隔 + body）
+        if (rows.length < 2) return match;
+
+        let table = "<table>";
+
+        rows.forEach((row, i) => {
+            const cells = row.split("|").slice(1, -1);
+
+            // 分隔行（---）跳过
+            if (/^\s*-+\s*$/.test(cells[0])) return;
+
+            const tag = i === 0 ? "th" : "td";
+
+            table += "<tr>";
+            cells.forEach((cell) => {
+                table += `<${tag}>${cell.trim()}</${tag}>`;
+            });
+            table += "</tr>";
+        });
+
+        table += "</table>";
+        return table;
+    });
+
+    // ===== 无序列表 =====
+    html = html.replace(/^\s*-\s+(.*)/gim, "<li>$1</li>");
+    html = html.replace(/(<li>.*<\/li>)/gims, "<ul>$1</ul>");
+
+    // ===== 换行 =====
+    html = html.replace(/\n/g, "<br />");
+
+    return html.trim();
+}
 
 /**
  * 转义 HTML 到属性值（处理属性中的特殊字符）

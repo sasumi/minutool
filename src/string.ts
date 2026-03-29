@@ -265,6 +265,7 @@ export const randomWords = (count = 1, letterMax = 8) => {
     }
     return words;
 };
+
 /**
  * 字符串转成首字母大写（Pascal Case）
  * @param {string} str - 要转换的字符串
