@@ -66,6 +66,13 @@ export {
   toggleDisabled
 } from './dom'
 
+// Event utilities
+export {
+  dispatchEvent,
+  offEvent,
+  onEvent
+} from './event'
+
 // File utilities
 export {
   blobToDataUri,

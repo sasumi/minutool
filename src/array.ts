@@ -38,12 +38,12 @@ export const arrayIndex = <T = any>(arr: T[], val: T): string | null => {
  * @returns {T[]} 去重后的数组
  * @example
  * arrayDistinct([1, 2, 2, 3, 3, 3]) // [1, 2, 3]
- * arrayDistinct([{id: 1}, {id: 2}, {id: 1}], item => item.id) // [{id: 1}, {id: 2}]
+ * arrayDistinct([{id: 1}, {id: 2}, {id: 1}], (item, index) => item.id) // [{id: 1}, {id: 2}]
  */
-export const arrayDistinct = <T = any>(arr: T[], payload?: (item: T) => any): T[] => {
+export const arrayDistinct = <T = any>(arr: T[], payload?: (item: T, index: number) => any): T[] => {
     let tmpMap = new Map();
-    return arr.filter((item: T) => {
-        let unique_key = payload ? payload(item) : item;
+    return arr.filter((item: T, index: number) => {
+        let unique_key = payload ? payload(item, index) : item;
         if (!tmpMap.has(unique_key)) {
             tmpMap.set(unique_key, true);
             return true;
