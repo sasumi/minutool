@@ -146,6 +146,7 @@ export type {
   AbortablePromise
 } from './net'
 export {
+  AbortError,
   abortableFetch,
   getJson,
   isBodyInit,
