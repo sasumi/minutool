@@ -3,7 +3,6 @@ import { regQuote } from "./string";
 /**
  * 块元素
  * 用大写定义，方便直接匹配 node.tagName
- * @type {string[]}
  */
 export const BLOCK_TAGS = [
     "ADDRESS",
@@ -40,12 +39,11 @@ export const BLOCK_TAGS = [
     "TFOOT",
     "UL",
     "VIDEO",
-];
+] as const;
 
 /**
  * 非自关闭标签
  * https://www.w3schools.com/html/html_blocks.asp
- * @type {*[]}
  */
 export const PAIR_TAGS = [
     "A",
@@ -84,27 +82,54 @@ export const PAIR_TAGS = [
 
 /**
  * 自关闭标签
- * @type {string[]}
  */
 export const SELF_CLOSING_TAGS = ["AREA", "BASE", "BR", "COL", "EMBED", "HR", "IMG", "INPUT", "LINK", "META", "PARAM", "SOURCE", "TRACK", "WBR"];
 
 /**
  * 非内容可清理标签
- * @type {string[]}
  */
 export const REMOVABLE_TAGS = ["STYLE", "COMMENT", "SELECT", "OPTION", "SCRIPT", "TITLE", "HEAD", "BUTTON", "META", "LINK", "PARAM", "SOURCE"];
 
 /**
  * 将 HTML 转换为纯文本（移除所有标签和样式）
- * @param {string} html - HTML 字符串
- * @returns {string} 返回纯文本
+ * @param html - HTML 字符串
+ * @param option - 转换选项
+ * @returns 返回纯文本
  * @example
  * html2Text('<p>Hello <b>World</b></p>') // 'Hello World'
  */
-export const html2Text = (html: string): string => {
+export const html2Text = (html: string, option: {
+    keepLineBreak?: boolean; // 是否保留换行符（默认 true）
+    imgReplacer?: string | ((src: string, alt: string) => string); // 替换图片标签的文本（默认 [Image]）
+    videoReplacer?: string | ((src: string, alt: string) => string); // 替换视频标签的文本（默认 [Video]）
+} = {}): string => {
+    option.keepLineBreak = option.keepLineBreak !== false; // 默认保留换行
+
+    //replace image tags
+    const imgReplacer = option.imgReplacer !== undefined ? option.imgReplacer : "[Image]";
+    html = html.replace(/<img[^>]*src=["']([^"']*)["'][^>]*alt=["']([^"']*)["'][^>]*>/gi, function (_ms: string, src: string, alt: string) {
+        return typeof imgReplacer === "function" ? imgReplacer(src, alt) : imgReplacer;
+    });
+    html = html.replace(/<img[^>]*alt=["']([^"']*)["'][^>]*src=["']([^"']*)["'][^>]*>/gi, function (_ms: string, alt: string, src: string) {
+        return typeof imgReplacer === "function" ? imgReplacer(src, alt) : imgReplacer;
+    });
+    html = html.replace(/<img[^>]*src=["']([^"']*)["'][^>]*>/gi, function (_ms: string, src: string) {
+        return typeof imgReplacer === "function" ? imgReplacer(src, "") : imgReplacer;
+    });
+
+    //replace video tags
+    const videoReplacer = option.videoReplacer !== undefined ? option.videoReplacer : "[Video]";
+    html = html.replace(/<video[^>]*src=["']([^"']*)["'][^>]*>/gi, function (_ms: string, src: string) {
+        return typeof videoReplacer === "function" ? videoReplacer(src, "") : videoReplacer;
+    });
+    html = html.replace(/<video[^>]*>[\s\S]*?<source[^>]*src=["']([^"']*)["'][^>]*>[\s\S]*?<\/video>/gi, function (_ms: string, src: string) {
+        return typeof videoReplacer === "function" ? videoReplacer(src, "") : videoReplacer;
+    });
+
     //remove removable tags
     REMOVABLE_TAGS.forEach((tag) => {
-        html = html.replace(new RegExp(tag, "ig"), "");
+        html = html.replace(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "gi"), "");
+        html = html.replace(new RegExp(`<${tag}[^>]*>`, "gi"), "");
     });
 
     //remove text line break
@@ -112,7 +137,7 @@ export const html2Text = (html: string): string => {
 
     //convert block tags to line break
     html = html.replace(/<(\w+)([^>]*)>/g, function (_ms: string, tag: string, _tail: string) {
-        if (BLOCK_TAGS.includes(tag.toUpperCase())) {
+        if (BLOCK_TAGS.includes(tag.toUpperCase() as typeof BLOCK_TAGS[number])) {
             return "\n";
         }
         return "";
@@ -139,12 +164,17 @@ export const html2Text = (html: string): string => {
     });
 
     //convert entity dec code
-    html = html.replace(/&#(\d+);/, function (_ms: string, dec: string) {
+    html = html.replace(/&#(\d+);/g, function (_ms: string, dec: string) {
         return String.fromCharCode(parseInt(dec));
     });
 
     //replace last &amp;
     html = html.replace(/&amp;/gi, "&");
+
+    //remove line breaks if not keeping them
+    if (!option.keepLineBreak) {
+        html = html.replace(/\n+/g, " ");
+    }
 
     //trim head & tail space
     html = html.trim();
@@ -350,10 +380,10 @@ export const escapeAttr = (s: string, preserveCR: string = ""): string => {
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             /*
-		You may add other replacements here for HTML only
-		(but it's not necessary).
-		Or for XML, only if the named entities are defined in its DTD.
-		*/
+        You may add other replacements here for HTML only
+        (but it's not necessary).
+        Or for XML, only if the named entities are defined in its DTD.
+        */
             .replace(/\r\n/g, preserveCR) /* Must be before the next replacement. */
             .replace(/[\r\n]/g, preserveCR)
     );

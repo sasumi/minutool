@@ -1,5 +1,5 @@
 import { SCREEN_DPI } from "./browser";
-import { isNumberic } from "./math";
+import { isNumberic, round } from "./math";
 
 /**
  * 首字母大写
@@ -54,7 +54,7 @@ export const unitConvert = (
         throw new Error(`Invalid number in value: ${value}`);
     }
     const dpi = extOption.dpi || SCREEN_DPI;
-    
+
     // 如果单位相同，直接返回
     if (fromUnit === toUnit) {
         return num;
@@ -413,4 +413,26 @@ export const strChunk = (str: string, size: number): string[] => {
  */
 export const isChinese = (str: string): boolean => {
     return /[\u4e00-\u9fa5]/.test(str);
+};
+
+/**
+ * 格式化文件大小
+ * @param bytes 文件大小（字节数）
+ * @param toUnit 目标单位（B/KB/MB/GB/TB/PB）
+ * @param decimalPlaces 小数位数，默认为 2
+ * @return 转换后的数值
+ * @example
+ * formatSize(1024) // 1
+ */
+export const formatSize = (bytes: number, toUnit: string = "B", decimalPlaces: number = 2): number => {
+    const units = ["B", "KB", "MB", "GB", "TB", "PB"];
+    let index = units.indexOf(toUnit.toUpperCase());
+    if (index === -1) {
+        throw new Error(`Unsupported unit: ${toUnit}`);
+    }
+    while (bytes >= 1024 && index < units.length - 1) {
+        bytes /= 1024;
+        index++;
+    }
+    return round(bytes, decimalPlaces);
 };

@@ -347,7 +347,7 @@ export const rectAssoc = (rect1: Dimension, rect2: Dimension): boolean => {
 /**
  * 检测元素是否可聚焦
  * @param {HTMLElement} el - DOM 元素
- * @returns {boolean} 如果元素可聚焦返回 true，否则返回 false
+ * @returns 如果元素可聚焦返回 true，否则返回 false
  * @example
  * isFocusable(inputElement) // true
  */

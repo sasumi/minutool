@@ -73,9 +73,12 @@ export {
 // Event utilities
 export {
   dispatchEvent,
+  eventDelegate,
   offEvent,
+  onDocReady,
   onEvent,
-  onEvents
+  onEvents,
+  triggerDomEvent
 } from './event'
 
 // File utilities
@@ -192,6 +195,7 @@ export {
   cutString,
   extract,
   floatVal,
+  formatSize,
   getUTF8StrLen,
   isChinese,
   kebabCase,
