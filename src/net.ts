@@ -68,6 +68,14 @@ export const objToQuery = (data: Record<string, any>): string => {
     return query.join("&");
 };
 
+/**
+ * 扩展 RequestInit，添加 timeout 和其他自定义属性，timeout 用于设置请求超时时间，其他自定义属性可以直接添加到 headers 中
+ */
+interface RequestOption extends RequestInit {
+    timeout?: number;
+    [key: string]: any;
+}
+
 export class AbortError extends Error {
     constructor(message: string) {
         super(message);
@@ -84,20 +92,20 @@ export interface AbortablePromise<T> extends Promise<T> {
 
 /**
  * 拓展原生 Fetch API 实现可中止的请求，支持超时设置
- * @param {string} url - 请求 URL
- * @param {RequestInit} [fetchOption={}] - fetch请求选项，包括 method、headers、body 等
- * @param {number} [timeout=0] - 超时时间，单位毫秒，0 表示不设置超时
- * @returns {AbortablePromise<any>} 返回可中止的 Promise 对象
+ * @param url - 请求 URL
+ * @param fetchOption - fetch请求选项，包括 method、headers、body 等
+ * @param timeout - 超时时间，单位毫秒，0 表示不设置超时
+ * @returns AbortablePromise<any> 返回可中止的 Promise 对象
  * @example
  * const req = abortableFetch('/api/data');
- * req.abort('cancled'); // 中止请求
+ * req.abort('canceled'); // 中止请求
  */
-export const abortableFetch = (url: string, fetchOption: RequestInit = {}, timeout = 0): AbortablePromise<any> => {
+export const abortableFetch = (url: string, fetchOption: RequestOption = {}): AbortablePromise<any> => {
     const controller = new AbortController();
 
     let timeoutId: number | null = null;
-    if (timeout) {
-        timeoutId = setTimeout(() => controller.abort(), timeout);
+    if (fetchOption.timeout) {
+        timeoutId = setTimeout(() => controller.abort(), fetchOption.timeout);
     }
 
     const clearTimer = () => {
@@ -153,12 +161,6 @@ export const abortableFetch = (url: string, fetchOption: RequestInit = {}, timeo
     return addAbortMethod(fetchPromise);
 };
 
-// 扩展 RequestInit，添加 timeout 和其他自定义属性，timeout 用于设置请求超时时间，其他自定义属性可以直接添加到 headers 中
-interface RequestOption extends RequestInit {
-    timeout?: number;
-    [key: string]: any;
-}
-
 const appendHeader = (key: string, value: any, headers: Headers): void => {
     if (value == null) return;
     // 将驼峰命名转换为 HTTP 头格式 (例如: ContentType -> content-type)
@@ -197,19 +199,18 @@ const isRequestInitProp = (key: string): boolean => {
  * @example
  * request('/api/data', null, {method: 'GET'})
  */
-export const request = (url: string, data: BodyInit | null = null, option: RequestOption): AbortablePromise<Response> => {
-    let { timeout, ...fetchOption } = option;
-    fetchOption = fetchOption || {};
-    fetchOption.method = fetchOption.method || "GET";
+export const request = (url: string, data: BodyInit | null = null, requestOption: RequestOption): AbortablePromise<Response> => {
+    requestOption = requestOption || {};
+    requestOption.method = requestOption.method || "GET";
 
-    const IS_GET = fetchOption.method.toUpperCase() === "GET";
+    const IS_GET = requestOption.method.toUpperCase() === "GET";
 
-    const headers = new Headers(fetchOption.headers || {});
+    const headers = new Headers(requestOption.headers || {});
 
     //如果 key 不是RequestInit的属性，则添加到 headers 中
-    for (let key in fetchOption) {
+    for (let key in requestOption) {
         if (!isRequestInitProp(key)) {
-            appendHeader(key, fetchOption[key], headers);
+            appendHeader(key, requestOption[key], headers);
         }
     }
 
@@ -225,9 +226,8 @@ export const request = (url: string, data: BodyInit | null = null, option: Reque
             ...{
                 body: !IS_GET ? fixData(data, headers.get("content-type") || undefined) : undefined,
             },
-            ...fetchOption,
+            ...requestOption,
         },
-        timeout,
     ).then((response) => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -271,10 +271,10 @@ const fixData = (data: any, contentType?: string) => {
 
 /**
  * 发送 GET 请求并获取 JSON 响应
- * @param {string} url - 请求 URL
- * @param {any} [data=null] - 请求数据
- * @param {RequestOption} [option={}] - 请求选项
- * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @param url - 请求 URL
+ * @param data - 请求数据
+ * @param option - 请求选项
+ * @returns Promise<any> 返回解析后的 JSON 数据
  * @example
  * getJson('/api/users').then(data => console.log(data))
  */
@@ -284,10 +284,10 @@ export const getJson = (url: string, data: any = null, option: RequestOption = {
 
 /**
  * 发送 POST 请求并获取 JSON 响应
- * @param {string} url - 请求 URL
- * @param {any} [data=null] - 请求数据
- * @param {RequestOption} [option={}] - 请求选项
- * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @param url - 请求 URL
+ * @param data - 请求数据
+ * @param option - 请求选项
+ * @returns Promise<any> 返回解析后的 JSON 数据
  * @example
  * postJson('/api/users', {name: 'John'}).then(data => console.log(data))
  */
@@ -297,11 +297,11 @@ export const postJson = (url: string, data: any = null, option: RequestOption = 
 
 /**
  * 上传文件
- * @param {string} url - 请求 URL
- * @param {Record<string, File>} fileMap - 文件对象映射
- * @param {any} [data=null] - 额外的表单数据
- * @param {RequestOption} [option={}] - 请求选项
- * @returns {Promise<any>} 返回解析后的 JSON 数据
+ * @param url - 请求 URL
+ * @param fileMap - 文件对象映射
+ * @param data - 额外的表单数据
+ * @param option - 请求选项
+ * @returns Promise<any> 返回解析后的 JSON 数据
  * @example
  * postFiles('/api/upload', {avatar: fileObject})
  */
