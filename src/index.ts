@@ -41,6 +41,7 @@ export {
 
 // Dom utilities
 export {
+  bindNodeMove,
   buildStyleVars,
   createDomByHtml,
   disabled,
@@ -72,6 +73,11 @@ export {
 
 // Event utilities
 export {
+  bindClick,
+  bindDomEvent,
+  bindDoubleClick,
+  bindKeyDown,
+  bindKeyUp,
   dispatchEvent,
   eventDelegate,
   offEvent,

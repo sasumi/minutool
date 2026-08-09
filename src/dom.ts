@@ -1,5 +1,6 @@
 import { guid } from "./util";
 import { between } from "./math";
+import { bindDomEvent } from "./event";
 
 /**
  * 隐藏节点（通过设置 display:none 方式）
@@ -82,27 +83,38 @@ export const toggleDisabled = (el: HTMLElement | string, disabledClass: string =
     }
 };
 
-export const onHover = (el: HTMLElement | string, onHoverIn: () => void, onHoverOut: () => void): void => {
+/**
+ * 绑定元素 hover 事件，返回解绑函数
+ * @param el - DOM 元素或选择器
+ * @param onHoverIn - 鼠标进入回调函数
+ * @param onHoverOut - 鼠标离开回调函数
+ * @returns 返回解绑函数
+ */
+export const onHover = (el: HTMLElement | string, onHoverIn: () => void, onHoverOut: () => void): () => void => {
     el = findOne(el) as HTMLElement;
     let isHovering = false;
-    el.addEventListener("mouseenter", () => {
+    const cleanup: (() => void)[] = [];
+    cleanup.push(bindDomEvent(el, "mouseenter", () => {
         if (!isHovering) {
             isHovering = true;
             onHoverIn && onHoverIn();
         }
-    });
-    el.addEventListener("mouseleave", () => {
+    }));
+    cleanup.push(bindDomEvent(el, "mouseleave", () => {
         if (isHovering) {
             isHovering = false;
             onHoverOut && onHoverOut();
         }
-    });
+    }));
+    return () => {
+        cleanup.forEach((fn) => fn());
+    }
 };
 
 /**
  * 绑定元素，禁止交互
- * @param {Node} el
- * @param {Function} payload 处理函数，参数为 reset
+ * @param el - DOM 元素或选择器
+ * @param payload - 处理函数，参数为 reset
  */
 export const lockElementInteraction = (el: HTMLElement | string, payload: (reset: () => void) => void): void => {
     disabled(el);
@@ -591,3 +603,61 @@ export const buildStyleVars = (vars: Record<string, number | string | undefined>
     }
     return styles;
 };
+
+/**
+ * 绑定对象移动事件
+ * @param element - 要移动的元素
+ * @param handle - 拖动句柄，默认为元素本身
+ */
+export function bindNodeMove(element: HTMLElement | string, handle: HTMLElement | string | null = null) {
+    const el = findOne(element) as HTMLElement;
+    handle = findOne(handle || el) as HTMLElement;
+    const previousPosition = el.style.position;
+    const previousLeft = el.style.left;
+    const previousTop = el.style.top;
+    const previousTransform = el.style.transform;
+
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    const onMouseMove = (event: MouseEvent) => {
+        if (!dragging) {
+            return;
+        }
+        el.style.position = "fixed";
+        el.style.transform = "none";
+        el.style.left = `${event.clientX - offsetX}px`;
+        el.style.top = `${event.clientY - offsetY}px`;
+    };
+
+    const stopDragging = () => {
+        dragging = false;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", stopDragging);
+    };
+
+    const onMouseDown = (event: MouseEvent) => {
+        if (event.button !== 0) {
+            return;
+        }
+        dragging = true;
+        const rect = el.getBoundingClientRect();
+        offsetX = event.clientX - rect.left;
+        offsetY = event.clientY - rect.top;
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", stopDragging);
+        event.preventDefault();
+    };
+
+    handle.addEventListener("mousedown", onMouseDown);
+
+    return () => {
+        stopDragging();
+        handle.removeEventListener("mousedown", onMouseDown);
+        el.style.position = previousPosition;
+        el.style.left = previousLeft;
+        el.style.top = previousTop;
+        el.style.transform = previousTransform;
+    };
+}

@@ -1,3 +1,5 @@
+import { findOne } from "./dom";
+
 const _EventBus = new EventTarget();
 const STR_SYM_MAP = new Map<string, symbol>();
 const SYM_STR_MAP = new Map<symbol, string>();
@@ -71,16 +73,76 @@ export const onDocReady = (handler: () => void) => {
  * @param handler 事件处理函数, 参数为事件对象和匹配的子元素 (event, target)
  * @return 返回一个取消事件委托的函数
  */
-export const eventDelegate = (parent: HTMLElement, selector: string, event: string, handler: (event: Event, target: HTMLElement) => void) => {
+export const eventDelegate = (parent: HTMLElement | string, selector: string, event: string, handler: (event: Event, target: HTMLElement) => void) => {
     const listener = (e: Event) => {
         const target = e.target as HTMLElement;
         if (target.matches(selector)) {
             handler(e, target);
         }
     };
-    parent.addEventListener(event, listener);
-    return () => parent.removeEventListener(event, listener);
-}
+    return bindDomEvent(parent, event, listener);
+};
+
+/**
+ * 绑定点击事件，并返回一个解绑函数
+ * @param element - 要绑定事件的元素
+ * @param callback - 事件回调函数
+ * @returns 解绑函数
+ */
+export const bindClick = (element: HTMLElement | string, callback: (event: Event) => void) => {
+    return bindDomEvent(element, "click", callback);
+};
+
+/**
+ * 绑定键盘按键抬起事件，并返回一个解绑函数
+ * @param element - 要绑定事件的元素
+ * @param callback - 事件回调函数
+ * @returns 解绑函数
+ */
+export const bindKeyUp = (element: HTMLElement | string, callback: (event: Event) => void) => {
+    return bindDomEvent(element, "keyup", callback);
+};
+
+/**
+ * 绑定键盘按键按下事件，并返回一个解绑函数
+ * @param element - 要绑定事件的元素
+ * @param callback - 事件回调函数
+ * @returns 解绑函数
+ */
+export const bindKeyDown = (element: HTMLElement | string, callback: (event: Event) => void) => {
+    return bindDomEvent(element, "keydown", callback);
+};
+
+/**
+ * 绑定双击事件，并返回一个解绑函数
+ * @param element - 要绑定事件的元素
+ * @param callback - 事件回调函数
+ * @returns 解绑函数
+ */
+export const bindDoubleClick = (element: HTMLElement | string, callback: (event: Event) => void) => {
+    return bindDomEvent(element, "dblclick", callback);
+};
+
+/**
+ * 绑定DOM事件，并返回一个解绑函数
+ * @param element - 要绑定事件的元素
+ * @param eventName - 事件名称
+ * @param callback - 事件回调函数
+ * @returns 解绑函数
+ */
+export const bindDomEvent = (element: HTMLElement | string, eventName: string, callback: (event: Event) => void) => {
+    const onEvent = (event: Event) => {
+        callback(event);
+    };
+    const el = findOne(element);
+    if (!el) {
+        throw new Error(`Element not found for selector: ${element}`);
+    }
+    el.addEventListener(eventName, onEvent);
+    return () => {
+        el.removeEventListener(eventName, onEvent);
+    };
+};
 
 /**
  * 触发HTML节点事件
