@@ -86,53 +86,53 @@ export const eventDelegate = (parent: HTMLElement | string, selector: string, ev
 /**
  * 绑定点击事件，并返回一个解绑函数
  * @param element - 要绑定事件的元素
- * @param callback - 事件回调函数
+ * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindClick = (element: HTMLElement | string, callback: (event: Event) => void) => {
-    return bindDomEvent(element, "click", callback);
+export const bindClick = (element: HTMLElement | string, payload: (event: Event) => void) => {
+    return bindDomEvent(element, "click", payload);
 };
 
 /**
  * 绑定键盘按键抬起事件，并返回一个解绑函数
  * @param element - 要绑定事件的元素
- * @param callback - 事件回调函数
+ * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyUp = (element: HTMLElement | string, callback: (event: Event) => void) => {
-    return bindDomEvent(element, "keyup", callback);
+export const bindKeyUp = (element: HTMLElement | string, payload: (event: Event) => void) => {
+    return bindDomEvent(element, "keyup", payload);
 };
 
 /**
  * 绑定键盘按键按下事件，并返回一个解绑函数
  * @param element - 要绑定事件的元素
- * @param callback - 事件回调函数
+ * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyDown = (element: HTMLElement | string, callback: (event: Event) => void) => {
-    return bindDomEvent(element, "keydown", callback);
+export const bindKeyDown = (element: HTMLElement | string, payload: (event: Event) => void) => {
+    return bindDomEvent(element, "keydown", payload);
 };
 
 /**
  * 绑定双击事件，并返回一个解绑函数
  * @param element - 要绑定事件的元素
- * @param callback - 事件回调函数
+ * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDoubleClick = (element: HTMLElement | string, callback: (event: Event) => void) => {
-    return bindDomEvent(element, "dblclick", callback);
+export const bindDoubleClick = (element: HTMLElement | string, payload: (event: Event) => void) => {
+    return bindDomEvent(element, "dblclick", payload);
 };
 
 /**
  * 绑定DOM事件，并返回一个解绑函数
  * @param element - 要绑定事件的元素
  * @param eventName - 事件名称
- * @param callback - 事件回调函数
+ * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDomEvent = (element: HTMLElement | string, eventName: string, callback: (event: Event) => void) => {
+export const bindDomEvent = (element: HTMLElement | string, eventName: string, payload: (event: Event) => void) => {
     const onEvent = (event: Event) => {
-        callback(event);
+        payload(event);
     };
     const el = findOne(element);
     if (!el) {

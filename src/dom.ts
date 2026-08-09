@@ -211,19 +211,19 @@ export const getNodeXPath = (el: HTMLElement | null): string | null => {
 };
 /**
  * 监听节点树变更
- * @param {HTMLElement} dom - 要监听的 DOM 节点
- * @param {Function} callback - 回调函数
- * @param {boolean} [includeElementChanged=true] - 是否包含表单元素的值变更
+ * @param dom - 要监听的 DOM 节点
+ * @param payload - 回调函数
+ * @param includeElementChanged - 是否包含表单元素的值变更
  * @returns {void}
  * @example
  * onDomTreeChange(container, () => console.log('changed'))
  */
-export const onDomTreeChange = (dom: HTMLElement, callback: () => void, includeElementChanged: boolean = true): void => {
+export const onDomTreeChange = (dom: HTMLElement, payload: () => void, includeElementChanged: boolean = true): void => {
     const PRO_KEY = "ON_DOM_TREE_CHANGE_BIND_" + guid();
     let watchEl = () => {
         findAll(`input:not([${PRO_KEY}]), textarea:not([${PRO_KEY}]), select:not([${PRO_KEY}])`, dom).forEach((el) => {
             el.setAttribute(PRO_KEY, "1");
-            el.addEventListener("change", callback);
+            el.addEventListener("change", payload);
         });
     };
     mutationEffective(
@@ -231,7 +231,7 @@ export const onDomTreeChange = (dom: HTMLElement, callback: () => void, includeE
         { attributes: true, subtree: true, childList: true },
         () => {
             includeElementChanged && watchEl();
-            callback();
+            payload();
         },
         10,
     );
@@ -250,16 +250,16 @@ export const onDomTreeChange = (dom: HTMLElement, callback: () => void, includeE
  */
 export const mutationEffective = (dom: HTMLElement, option: MutationObserverInit, payload: (obs: MutationObserver) => void, minInterval: number = 10): void => {
     let last_queue_time = 0;
-    let callback_queueing = false;
+    let payload_queueing = false;
     let obs = new MutationObserver(() => {
-        if (callback_queueing) {
+        if (payload_queueing) {
             return;
         }
         let r = minInterval - (Date.now() - last_queue_time);
         if (r > 0) {
-            callback_queueing = true;
+            payload_queueing = true;
             setTimeout(() => {
-                callback_queueing = false;
+                payload_queueing = false;
                 last_queue_time = Date.now();
                 payload(obs);
             }, r);
