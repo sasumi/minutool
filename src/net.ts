@@ -88,6 +88,20 @@ export class AbortError extends Error {
  */
 export interface AbortablePromise<T> extends Promise<T> {
     abort: () => void;
+
+    // 重写 then 方法，返回 AbortablePromise 而不是 Promise
+    then<TResult1 = T, TResult2 = never>(
+        onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): AbortablePromise<TResult1 | TResult2>;
+
+    // 重写 catch 方法
+    catch<TResult = never>(
+        onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): AbortablePromise<T | TResult>;
+
+    // 重写 finally 方法
+    finally(onfinally?: (() => void) | undefined | null): AbortablePromise<T>;
 }
 
 /**
