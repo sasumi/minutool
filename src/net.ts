@@ -91,6 +91,12 @@ export interface AbortablePromise<T> extends PromiseLike<T> {
     // 添加 abort 方法
     abort: () => void;
 
+    // 添加 abortSilently 方法，用于中止请求但不抛出异常
+    abortSilently: () => void;
+
+    // 添加 aborted 属性，表示请求是否已被中止
+    aborted: boolean;
+
     // 完全重新定义 then 方法，返回 AbortablePromise
     then<TResult1 = T, TResult2 = never>(
         onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
@@ -158,7 +164,15 @@ export const abortableFetch = (url: string, fetchOption: RequestOption = {}): Ab
         // 添加 abort 方法
         abortablePromise.abort = (reason?: string) => {
             clearTimer();
+            abortablePromise.aborted = true;
             controller.abort(new AbortError(reason || "request aborted."));
+        };
+
+        // 添加 abortSilently 方法
+        abortablePromise.abortSilently = () => {
+            clearTimer();
+            abortablePromise.aborted = true;
+            controller.abort();
         };
 
         return abortablePromise;
