@@ -167,6 +167,7 @@ export type {
 export {
   AbortError,
   abortableFetch,
+  asAbortable,
   getJson,
   isBodyInit,
   objToQuery,

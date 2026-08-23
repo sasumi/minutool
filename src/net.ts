@@ -85,23 +85,28 @@ export class AbortError extends Error {
 
 /**
  * 可中止的 Fetch 请求
+ * 完全独立定义，避免与 Promise 类型混淆
  */
-export interface AbortablePromise<T> extends Promise<T> {
+export interface AbortablePromise<T> extends PromiseLike<T> {
+    // 添加 abort 方法
     abort: () => void;
 
-    // 重写 then 方法，返回 AbortablePromise 而不是 Promise
+    // 完全重新定义 then 方法，返回 AbortablePromise
     then<TResult1 = T, TResult2 = never>(
         onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
         onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
     ): AbortablePromise<TResult1 | TResult2>;
 
-    // 重写 catch 方法
+    // 定义 catch 方法
     catch<TResult = never>(
         onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
     ): AbortablePromise<T | TResult>;
 
-    // 重写 finally 方法
+    // 定义 finally 方法
     finally(onfinally?: (() => void) | undefined | null): AbortablePromise<T>;
+
+    // 添加 Symbol.toStringTag，使其在运行时表现像 Promise
+    readonly [Symbol.toStringTag]: "Promise";
 }
 
 /**
@@ -173,6 +178,18 @@ export const abortableFetch = (url: string, fetchOption: RequestOption = {}): Ab
         });
 
     return addAbortMethod(fetchPromise);
+};
+
+/**
+ * 类型断言辅助函数：明确告诉 TypeScript 某个值是 AbortablePromise
+ * 用于解决 TypeScript 类型推导在某些情况下无法识别 AbortablePromise 的问题
+ * @param promise - 实际上是 AbortablePromise 的对象
+ * @returns 带有正确类型的 AbortablePromise
+ * @example
+ * const req = asAbortable(abortableFetch('/api').then(res => res.json()));
+ */
+export const asAbortable = <T>(promise: any): AbortablePromise<T> => {
+    return promise as AbortablePromise<T>;
 };
 
 const appendHeader = (key: string, value: any, headers: Headers): void => {
