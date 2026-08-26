@@ -172,6 +172,7 @@ export const findAll = (
 export const findOne = (selector: string | Element, parent: Document | DocumentFragment | Element = document): Element | null => {
     return typeof selector === "string" ? parent.querySelector(selector) : selector;
 };
+
 /**
  * 获取节点的 XPath
  * @param {HTMLElement|null} el - DOM 元素

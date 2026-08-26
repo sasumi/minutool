@@ -172,7 +172,11 @@ export const abortableFetch = (url: string, fetchOption: RequestOption = {}): Ab
         abortablePromise.abortSilently = () => {
             clearTimer();
             abortablePromise.aborted = true;
-            controller.abort();
+            try {
+                controller.abort();
+            } catch (e) {
+                // 忽略异常
+            }
         };
 
         return abortablePromise;
@@ -192,18 +196,6 @@ export const abortableFetch = (url: string, fetchOption: RequestOption = {}): Ab
         });
 
     return addAbortMethod(fetchPromise);
-};
-
-/**
- * 类型断言辅助函数：明确告诉 TypeScript 某个值是 AbortablePromise
- * 用于解决 TypeScript 类型推导在某些情况下无法识别 AbortablePromise 的问题
- * @param promise - 实际上是 AbortablePromise 的对象
- * @returns 带有正确类型的 AbortablePromise
- * @example
- * const req = asAbortable(abortableFetch('/api').then(res => res.json()));
- */
-export const asAbortable = <T>(promise: any): AbortablePromise<T> => {
-    return promise as AbortablePromise<T>;
 };
 
 const appendHeader = (key: string, value: any, headers: Headers): void => {
