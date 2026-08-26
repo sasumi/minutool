@@ -73,11 +73,17 @@ export const onDocReady = (handler: () => void) => {
  * @param handler 事件处理函数, 参数为事件对象和匹配的子元素 (event, target)
  * @return 返回一个取消事件委托的函数
  */
-export const eventDelegate = (parent: Element | string, selector: string, event: string, handler: (event: Event, target: Element) => void) => {
+export const eventDelegate = (
+    parent: EventTarget | string,
+    selector: string,
+    event: string,
+    handler: (event: Event, target: Element) => void
+) => {
     const listener = (e: Event) => {
-        const target = e.target as Element;
-        if (target.matches(selector)) {
-            handler(e, target);
+        const target = e.target as Element | null;
+        const matchedTarget = target?.closest?.(selector);
+        if (matchedTarget) {
+            handler(e, matchedTarget);
         }
     };
     return bindDomEvent(parent, event, listener);
@@ -89,7 +95,7 @@ export const eventDelegate = (parent: Element | string, selector: string, event:
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindClick = (element: Element | string, payload: (event: Event) => void) => {
+export const bindClick = (element: EventTarget | string, payload: (event: Event) => void) => {
     return bindDomEvent(element, "click", payload);
 };
 
@@ -99,7 +105,7 @@ export const bindClick = (element: Element | string, payload: (event: Event) => 
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyUp = (element: Element | string, payload: (event: Event) => void) => {
+export const bindKeyUp = (element: EventTarget | string, payload: (event: Event) => void) => {
     return bindDomEvent(element, "keyup", payload);
 };
 
@@ -109,7 +115,7 @@ export const bindKeyUp = (element: Element | string, payload: (event: Event) => 
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyDown = (element: Element | string, payload: (event: Event) => void) => {
+export const bindKeyDown = (element: EventTarget | string, payload: (event: Event) => void) => {
     return bindDomEvent(element, "keydown", payload);
 };
 
@@ -119,7 +125,7 @@ export const bindKeyDown = (element: Element | string, payload: (event: Event) =
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDoubleClick = (element: Element | string, payload: (event: Event) => void) => {
+export const bindDoubleClick = (element: EventTarget | string, payload: (event: Event) => void) => {
     return bindDomEvent(element, "dblclick", payload);
 };
 
@@ -130,13 +136,13 @@ export const bindDoubleClick = (element: Element | string, payload: (event: Even
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDomEvent = (element: Element | string, eventName: string, payload: (event: Event) => void) => {
+export const bindDomEvent = (element: EventTarget | string, eventName: string, payload: (event: Event) => void) => {
     const onEvent = (event: Event) => {
         payload(event);
     };
-    const el = findOne(element);
+    const el = typeof element === "string" ? findOne(element) : element;
     if (!el) {
-        throw new Error(`Element not found for selector: ${element}`);
+        throw new Error(`EventTarget not found for selector: ${element}`);
     }
     el.addEventListener(eventName, onEvent);
     return () => {
@@ -149,7 +155,7 @@ export const bindDomEvent = (element: Element | string, eventName: string, paylo
  * @param node HTML节点
  * @param event 事件名称
  */
-export const triggerDomEvent = (node: Element, event: string) => {
+export const triggerDomEvent = (node: EventTarget, event: string) => {
     if ("createEvent" in document) {
         let evt = document.createEvent("HTMLEvents");
         evt.initEvent(event.toLowerCase(), false, true);
