@@ -136,9 +136,13 @@ export const bindDoubleClick = (element: EventTarget | string, payload: (event: 
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDomEvent = (element: EventTarget | string, eventName: string, payload: (event: Event) => void) => {
+export const bindDomEvent = <E extends Event = Event>(
+    element: EventTarget | string,
+    eventName: string,
+    payload: (event: E) => void
+) => {
     const onEvent = (event: Event) => {
-        payload(event);
+        payload(event as E);
     };
     const el = typeof element === "string" ? findOne(element) : element;
     if (!el) {
