@@ -112,7 +112,7 @@ export const round = (num: number, precision: number = 2): number => {
  * isNumberic('-123') // true
  * isNumberic('210mm') // false
  */
-export const isNumberic = (val: any): boolean => {
+export const isNumberic = (val: unknown): boolean => {
     if (typeof val === 'number') {
         return isFinite(val);
     }

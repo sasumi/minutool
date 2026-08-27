@@ -6,9 +6,9 @@
  * @example
  * arrayColumn([{id: 1, name: 'A'}, {id: 2, name: 'B'}], 'name') // ['A', 'B']
  */
-export const arrayColumn = <T = any>(arr: T[], col_name: keyof T): any[] => {
-    let data: any[] = [];
-    for (let i in arr) {
+export const arrayColumn = <T = any>(arr: T[], col_name: keyof T): T[keyof T][] => {
+    let data: T[keyof T][] = [];
+    for (let i = 0; i < arr.length; i++) {
         data.push(arr[i][col_name]);
     }
     return data;
@@ -22,8 +22,8 @@ export const arrayColumn = <T = any>(arr: T[], col_name: keyof T): any[] => {
  * @example
  * arrayIndex(['a', 'b', 'c'], 'b') // '1'
  */
-export const arrayIndex = <T = any>(arr: T[], val: T): string | null => {
-    for (let i in arr) {
+export const arrayIndex = <T = any>(arr: T[], val: T): number | null => {
+    for (let i = 0; i < arr.length; i++) {
         if (arr[i] === val) {
             return i;
         }
@@ -40,10 +40,10 @@ export const arrayIndex = <T = any>(arr: T[], val: T): string | null => {
  * arrayDistinct([1, 2, 2, 3, 3, 3]) // [1, 2, 3]
  * arrayDistinct([{id: 1}, {id: 2}, {id: 1}], (item, index) => item.id) // [{id: 1}, {id: 2}]
  */
-export const arrayDistinct = <T = any>(arr: T[], payload?: (item: T, index: number) => any): T[] => {
-    let tmpMap = new Map();
+export const arrayDistinct = <T = any, K = any>(arr: T[], payload?: (item: T, index: number) => K): T[] => {
+    let tmpMap = new Map<any, boolean>();
     return arr.filter((item: T, index: number) => {
-        let unique_key = payload ? payload(item, index) : item;
+        let unique_key: any = payload ? payload(item, index) : item;
         if (!tmpMap.has(unique_key)) {
             tmpMap.set(unique_key, true);
             return true;
@@ -137,7 +137,7 @@ export const arrayChunk = <T = any>(list: T[], size: number): T[][] => {
  * @example
  * arrayTrimTail([1, 2, 0, false, null]) // [1, 2]
  */
-export const arrayTrimTail = (arr: any[]) => {
+export const arrayTrimTail = <T>(arr: T[]): T[] => {
     let lastNonZeroIndex = -1;
     for (let i = arr.length - 1; i >= 0; i--) {
         if (arr[i]) {

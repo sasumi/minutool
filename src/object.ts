@@ -104,9 +104,9 @@ export const objectSwitchKV = (obj: object) => {
  * get({ a: { b: { c: 1 } } }, 'a.b.c') // 1
  * get({ a: { b: 1 } }, 'a.b.c', 0) // 0
  */
-export function objectGet<T = any>(obj: any, path: string, defaultValue?: T): T {
+export function objectGet<T = any>(obj: object, path: string, defaultValue?: T): T {
     const keys = path.split(".");
-    let result = obj;
+    let result: any = obj;
 
     for (const key of keys) {
         if (result === null || result === undefined) {
@@ -182,12 +182,13 @@ export function objectMerge<T extends object>(target: T, ...sources: Partial<T>[
  * @example
  * cleanNull({a: 1, b: null, c: {d: null}}, true) // {a: 1, c: {}}
  */
-export const cleanNull = (obj: any, recursive = false) => {
-    for (const key in obj) {
-        if (obj[key] === null) {
-            delete obj[key];
-        } else if (recursive && typeof obj[key] === "object") {
-            cleanNull(obj[key], true);
+export const cleanNull = <T>(obj: T, recursive = false): T => {
+    const o = obj as any;
+    for (const key in o) {
+        if (o[key] === null) {
+            delete o[key];
+        } else if (recursive && typeof o[key] === "object") {
+            cleanNull(o[key], true);
         }
     }
     return obj;

@@ -98,11 +98,11 @@ export const unitConvert = (
  * @param {number} [defaultVal=0] - 转换失败时的默认值
  * @returns {number} 返回转换后的浮点数，如果转换失败则返回默认值
  */
-export const floatVal = (str: any, defaultVal: number = 0): number => {
+export const floatVal = (str: unknown, defaultVal: number = 0): number => {
     if (!isNumberic(str)) {
         return defaultVal;
     }
-    return parseFloat(str);
+    return parseFloat(String(str));
 };
 
 /**

@@ -19,18 +19,19 @@ export const isPortrait = () => window.innerHeight > window.innerWidth;
  * @example
  * enterFullScreen(document.body)
  */
-export const enterFullScreen = (element: any): Promise<void> => {
+export const enterFullScreen = (element: HTMLElement): Promise<void> => {
+	const el = element as any;
 	if (element.requestFullscreen) {
 		return element.requestFullscreen();
 	}
-	if (element.webkitRequestFullScreen) {
-		return element.webkitRequestFullScreen();
+	if (el.webkitRequestFullScreen) {
+		return el.webkitRequestFullScreen();
 	}
-	if (element.mozRequestFullScreen) {
-		element.mozRequestFullScreen();
+	if (el.mozRequestFullScreen) {
+		el.mozRequestFullScreen();
 	}
-	if (element.msRequestFullScreen) {
-		element.msRequestFullScreen();
+	if (el.msRequestFullScreen) {
+		el.msRequestFullScreen();
 	}
 	throw "Browser no allow full screen";
 }
@@ -52,7 +53,7 @@ export const exitFullScreen = () => {
  * @example
  * toggleFullScreen(document.body)
  */
-export const toggleFullScreen = (element: any): Promise<unknown> => {
+export const toggleFullScreen = (element: HTMLElement): Promise<unknown> => {
 	return new Promise((resolve, reject) => {
 		if (!isInFullScreen()) {
 			enterFullScreen(element).then(resolve).catch(reject);

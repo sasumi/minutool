@@ -45,7 +45,7 @@ export const offEvent = (event: string | symbol, handler: EventListenerOrEventLi
  * @param event 事件名称
  * @param detail 事件详情
  */
-export const dispatchEvent = (event: string | symbol, detail: any = null) => {
+export const dispatchEvent = <T = any>(event: string | symbol, detail?: T) => {
     _EventBus.dispatchEvent(new CustomEvent(typeof event === "symbol" ? symbolToString(event) : event, { detail }));
 };
 
@@ -95,7 +95,7 @@ export const eventDelegate = (
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindClick = (element: EventTarget | string, payload: (event: Event) => void) => {
+export const bindClick = (element: EventTarget | string, payload: (event: MouseEvent) => void) => {
     return bindDomEvent(element, "click", payload);
 };
 
@@ -105,7 +105,7 @@ export const bindClick = (element: EventTarget | string, payload: (event: Event)
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyUp = (element: EventTarget | string, payload: (event: Event) => void) => {
+export const bindKeyUp = (element: EventTarget | string, payload: (event: KeyboardEvent) => void) => {
     return bindDomEvent(element, "keyup", payload);
 };
 
@@ -115,7 +115,7 @@ export const bindKeyUp = (element: EventTarget | string, payload: (event: Event)
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindKeyDown = (element: EventTarget | string, payload: (event: Event) => void) => {
+export const bindKeyDown = (element: EventTarget | string, payload: (event: KeyboardEvent) => void) => {
     return bindDomEvent(element, "keydown", payload);
 };
 
@@ -125,7 +125,7 @@ export const bindKeyDown = (element: EventTarget | string, payload: (event: Even
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDoubleClick = (element: EventTarget | string, payload: (event: Event) => void) => {
+export const bindDoubleClick = (element: EventTarget | string, payload: (event: MouseEvent) => void) => {
     return bindDomEvent(element, "dblclick", payload);
 };
 

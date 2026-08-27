@@ -140,7 +140,7 @@ export const nodeIndex = (node: HTMLElement): number => {
  * findAll('.item', container)
  */
 export const findAll = (
-    selector: string | Element | Element[],
+    selector: string | Element | Element[] | NodeList | HTMLCollection,
     parent: Document | DocumentFragment | Element = document,
 ): Element[] => {
     if (typeof selector === "string") {

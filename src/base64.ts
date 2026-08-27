@@ -83,7 +83,7 @@ export const Base64Encode = (text: string): string => {
  * @example
  * blobToBase64(blob).then(base64 => console.log(base64))
  */
-export const blobToBase64 = async (blob: Blob): Promise<unknown> => {
+export const blobToBase64 = async (blob: Blob): Promise<string> => {
     return await _blobToBase64(blob);
 };
 
@@ -92,10 +92,10 @@ export const blobToBase64 = async (blob: Blob): Promise<unknown> => {
  * @param {Blob} blob - Blob 对象
  * @returns {Promise<unknown>} 返回 Base64 Data URL 字符串的 Promise
  */
-const _blobToBase64 = (blob: Blob): Promise<unknown> =>
+const _blobToBase64 = (blob: Blob): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = () => resolve(reader.result as string);
         reader.onerror = (error) => reject(error);
     });

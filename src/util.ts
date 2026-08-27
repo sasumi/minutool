@@ -21,7 +21,7 @@ export const guid = (prefix = "") => {
  * @example
  * const throttled = throttle(() => console.log('called'), 1000)
  */
-export const throttle = (fn: Function, intervalMiSec: number): Function => {
+export const throttle = <T extends (...args: any[]) => any>(fn: T, intervalMiSec: number): T => {
     let context: any, args: any;
     let previous = 0;
     return function (this: any) {
@@ -32,7 +32,7 @@ export const throttle = (fn: Function, intervalMiSec: number): Function => {
             fn.apply(context, args as any);
             previous = now;
         }
-    };
+    } as T;
 };
 
 /**
@@ -45,7 +45,7 @@ export const throttle = (fn: Function, intervalMiSec: number): Function => {
  * @example
  * const throttled = throttleEffect(() => console.log('called'), 1000)
  */
-export const throttleEffect = (fn: Function, intervalMiSec: number): Function => {
+export const throttleEffect = <T extends (...args: any[]) => any>(fn: T, intervalMiSec: number): T => {
     let context: any, args: any;
     let lastExecuteTime = 0;
     let queuing = false;
@@ -68,7 +68,7 @@ export const throttleEffect = (fn: Function, intervalMiSec: number): Function =>
                 lastExecuteTime = now;
             }, remaining);
         }
-    };
+    } as T;
 };
 
 /**
@@ -80,16 +80,16 @@ export const throttleEffect = (fn: Function, intervalMiSec: number): Function =>
  * @example
  * const debounced = debounce(() => console.log('called'), 1000)
  */
-export const debounce = (fn: Function, intervalMiSec: number): Function => {
+export const debounce = <T extends (...args: any[]) => any>(fn: T, intervalMiSec: number): T => {
     let timeout: any;
     return function (this: any) {
         let context = this;
         let args = arguments;
         clearTimeout(timeout);
         timeout = setTimeout(function () {
-            fn.apply(context, args);
+            fn.apply(context, args as any);
         }, intervalMiSec);
-    };
+    } as T;
 };
 /**
  * 检测对象是否为 Promise 对象

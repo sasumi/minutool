@@ -136,7 +136,7 @@ export const svgGetDimension = (svg: SVGSVGElement): [number, number] => {
  * @example
  * srcToBase64('https://example.com/image.png').then(base64 => console.log(base64))
  */
-export const srcToBase64 = (url: string, cache: boolean = false): Promise<unknown> => {
+export const srcToBase64 = (url: string, cache: boolean = false): Promise<string> => {
     return new Promise((resolve, reject) => {
         if (cache) {
             const cached = urlB64DataCache(url);
@@ -153,7 +153,7 @@ export const srcToBase64 = (url: string, cache: boolean = false): Promise<unknow
                 blobToBase64(blob)
                     .then((base64) => {
                         if (cache) {
-                            urlB64DataCache(url, base64 as string);
+                            urlB64DataCache(url, base64);
                         }
                         resolve(base64);
                     })

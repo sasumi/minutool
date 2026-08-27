@@ -44,7 +44,7 @@ export const queryReplace = (url: string, newQuery: Record<string, any>): string
  * @example
  * objToQuery({name: 'John', age: 30}) // 'name=John&age=30'
  */
-export const objToQuery = (data: Record<string, any>): string => {
+export const objToQuery = (data: any): string => {
     if (typeof data === "undefined" || typeof data !== "object") {
         return data;
     }
@@ -125,7 +125,7 @@ export interface AbortablePromise<T> extends PromiseLike<T> {
  * const req = abortableFetch('/api/data');
  * req.abort('canceled'); // 中止请求
  */
-export const abortableFetch = (url: string, fetchOption: RequestOption = {}): AbortablePromise<any> => {
+export const abortableFetch = <T = any>(url: string, fetchOption: RequestOption = {}): AbortablePromise<T> => {
     const controller = new AbortController();
 
     let timeoutId: number | null = null;
@@ -195,17 +195,35 @@ export const abortableFetch = (url: string, fetchOption: RequestOption = {}): Ab
             throw err;
         });
 
-    return addAbortMethod(fetchPromise);
+    return addAbortMethod(fetchPromise) as AbortablePromise<T>;
 };
 
-const appendHeader = (key: string, value: any, headers: Headers): void => {
+const appendHeader = (key: string, value: any, headers: Record<string, string>): void => {
     if (value == null) return;
-    // 将驼峰命名转换为 HTTP 头格式 (例如: ContentType -> content-type)
+    // 将驼峰命名转换为 HTTP 头格式 (例如: ContentType -> Content-Type)，保留大小写
     const headerName = key
         .replace(/([A-Z])/g, "-$1")
-        .replace(/^-/, "")
-        .toLowerCase();
-    headers.set(headerName, String(value));
+        .replace(/^-/, "");
+    headers[headerName] = String(value);
+};
+
+const normalizeHeaders = (init: HeadersInit | undefined): Record<string, string> => {
+    const result: Record<string, string> = {};
+    if (!init) return result;
+    if (init instanceof Headers) {
+        init.forEach((value, key) => {
+            result[key] = value;
+        });
+    } else if (Array.isArray(init)) {
+        init.forEach(([key, value]) => {
+            result[key] = String(value);
+        });
+    } else {
+        for (const key in init) {
+            result[key] = String(init[key]);
+        }
+    }
+    return result;
 };
 
 // 判断属性是否为 RequestInit 的标准属性
@@ -236,17 +254,18 @@ const isRequestInitProp = (key: string): boolean => {
  * @example
  * request('/api/data', null, {method: 'GET'})
  */
-export const request = (url: string, data: BodyInit | null = null, requestOption: RequestOption): AbortablePromise<Response> => {
+export const request = (url: string, data: any = null, requestOption: RequestOption = {}): AbortablePromise<Response> => {
     requestOption = requestOption || {};
     requestOption.method = requestOption.method || "GET";
 
     const IS_GET = requestOption.method.toUpperCase() === "GET";
 
-    const headers = new Headers(requestOption.headers || {});
+    // 合并 headers：先复制用户自定义 headers，再把 ContentType/Accept 等驼峰键转换为 header 名
+    const headers = normalizeHeaders(requestOption.headers);
 
-    //如果 key 不是RequestInit的属性，则添加到 headers 中
+    // 如果 key 不是 RequestInit 的标准属性，则添加到 headers 中（timeout 除外，交由 abortableFetch 处理）
     for (let key in requestOption) {
-        if (!isRequestInitProp(key)) {
+        if (!isRequestInitProp(key) && key !== "timeout") {
             appendHeader(key, requestOption[key], headers);
         }
     }
@@ -256,16 +275,22 @@ export const request = (url: string, data: BodyInit | null = null, requestOption
         data = null;
     }
 
-    return abortableFetch(
-        url,
-        {
-            headers,
-            ...{
-                body: !IS_GET ? fixData(data, headers.get("content-type") || undefined) : undefined,
-            },
-            ...requestOption,
-        },
-    ).then((response) => {
+    // 构造最终 fetch 选项，仅保留 RequestInit 标准属性，并统一使用合并后的 headers
+    const fetchOption: RequestInit & { timeout?: number } = {};
+    for (let key in requestOption) {
+        if (key === "timeout") {
+            fetchOption.timeout = requestOption.timeout;
+        } else if (isRequestInitProp(key) && key !== "headers") {
+            (fetchOption as any)[key] = requestOption[key];
+        }
+    }
+    fetchOption.headers = headers;
+    if (!IS_GET) {
+        const contentType = headers["Content-Type"] || headers["content-type"];
+        fetchOption.body = fixData(data, contentType);
+    }
+
+    return abortableFetch(url, fetchOption).then((response) => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

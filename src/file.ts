@@ -61,7 +61,7 @@ export const urlB64DataCache = (url: string, b64Data: string | null = null): str
  * @example
  * fileToBase64DataUri(file).then(uri => console.log(uri))
  */
-export const fileToBase64DataUri = async (file: File | Blob | string) => {
+export const fileToBase64DataUri = async (file: File | Blob | string): Promise<string | null> => {
     if (!file) {
         return null;
     }
