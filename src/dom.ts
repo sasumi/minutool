@@ -519,23 +519,24 @@ export const fixBaseUrl = (url: string, baseUrl: string): string => {
 
 /**
  * 创建 HTML 节点
- * @param {string} html - HTML 字符串
- * @param {HTMLElement|null} [parentNode=null] - 父级节点，如果提供则自动添加到父节点
- * @returns {Node|Node[]} 返回创建的节点，单个或多个
- * @example
- * createDomByHtml('<div>Hello</div>')
+ * @param html - HTML 字符串
+ * @param [parentNode=null] - 父级节点，如果提供则自动添加到父节点
+ * @returns 返回创建的元素，单个或多个
  */
-export const createDomByHtml = (html: string, parentNode: HTMLElement | null = null): Node | Node[] => {
-    let tpl = document.createElement("template");
+export const createDomByHtml = <T extends Element = Element>(
+    html: string,
+    parentNode: HTMLElement | null = null
+): T | T[] => {
+    const tpl = document.createElement("template");
     html = html.trim();
     tpl.innerHTML = html;
-    let nodes: Node[] = [];
+    let nodes: T[] = [];
     if (parentNode) {
-        tpl.content.childNodes.forEach((node) => {
-            nodes.push(parentNode.appendChild(node));
+        Array.from(tpl.content.children).forEach((node) => {
+            nodes.push(parentNode.appendChild(node) as T);
         });
     } else {
-        nodes = Array.from(tpl.content.childNodes);
+        nodes = Array.from(tpl.content.children) as T[];
     }
     return nodes.length === 1 ? nodes[0] : nodes;
 };
