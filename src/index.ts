@@ -76,6 +76,7 @@ export {
   bindClick,
   bindDomEvent,
   bindDoubleClick,
+  bindInputDebounce,
   bindKeyDown,
   bindKeyUp,
   dispatchEvent,
