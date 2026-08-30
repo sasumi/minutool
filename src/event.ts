@@ -18,7 +18,7 @@ function symbolToString(sym: symbol): string {
 export const onEvents = (events: (string | symbol)[], handler: EventListenerOrEventListenerObject) => {
     const offFunctions = events.map((event) => onEvent(event, handler));
     return () => offFunctions.forEach((off) => off());
-}
+};
 
 /**
  * 订阅事件，event 可以是字符串或 Symbol，handler 是事件处理函数
@@ -73,12 +73,7 @@ export const onDocReady = (handler: () => void) => {
  * @param handler 事件处理函数, 参数为事件对象和匹配的子元素 (event, target)
  * @return 返回一个取消事件委托的函数
  */
-export const eventDelegate = (
-    parent: EventTarget | string,
-    selector: string,
-    event: string,
-    handler: (event: Event, target: Element) => void
-) => {
+export const eventDelegate = (parent: EventTarget | string, selector: string, event: string, handler: (event: Event, target: Element) => void) => {
     const listener = (e: Event) => {
         const target = e.target as Element | null;
         const matchedTarget = target?.closest?.(selector);
@@ -136,11 +131,7 @@ export const bindDoubleClick = (element: EventTarget | string, payload: (event: 
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDomEvent = <E extends Event = Event>(
-    element: EventTarget | string,
-    eventName: string,
-    payload: (event: E) => void
-) => {
+export const bindDomEvent = <E extends Event = Event>(element: EventTarget | string, eventName: string, payload: (event: E) => void) => {
     const onEvent = (event: Event) => {
         payload(event as E);
     };
@@ -151,6 +142,77 @@ export const bindDomEvent = <E extends Event = Event>(
     el.addEventListener(eventName, onEvent);
     return () => {
         el.removeEventListener(eventName, onEvent);
+    };
+};
+
+/**
+ * 为 input/textarea 绑定支持 IME 的防抖函数
+ * @param element - DOM 元素
+ * @param callback - 回调，参数为 { value, event }
+ * @param delay - 防抖延迟（ms），默认 300
+ * @returns { destroy, cancel, flush }
+ */
+export const bindInputDebounce = (
+    element: HTMLInputElement | HTMLTextAreaElement,
+    callback: (value: string, event: InputEvent) => void,
+    delay: number = 300,
+): (() => void) => {
+    let isComposing = false;
+    let timer: number | null = null;
+    let lastExecutedValue: string | null = null;
+    let pendingEvent: InputEvent | null = null;
+
+    const exec = (event: InputEvent) => {
+        const target = event.target as HTMLInputElement | HTMLTextAreaElement;
+        let value = target.value;
+        if (lastExecutedValue === value) {
+            return;
+        }
+
+        lastExecutedValue = value;
+        callback(value, event);
+    };
+
+    const handleInput = (e: Event) => {
+        const inputEvent = e as InputEvent;
+        if (inputEvent.isComposing || isComposing) {
+            return;
+        }
+
+        pendingEvent = inputEvent;
+        if (timer) {
+            clearTimeout(timer);
+        }
+
+        timer = window.setTimeout(() => {
+            timer = null;
+            if (isComposing || !pendingEvent) {
+                return;
+            }
+            exec(pendingEvent);
+            pendingEvent = null;
+        }, delay);
+    };
+
+    const onCompositionStart = () => {
+        isComposing = true;
+    };
+    const onCompositionEnd = () => {
+        isComposing = false;
+    };
+
+    element.addEventListener("input", handleInput);
+    element.addEventListener("compositionstart", onCompositionStart);
+    element.addEventListener("compositionend", onCompositionEnd);
+    return () => {
+        element.removeEventListener("input", handleInput);
+        element.removeEventListener("compositionstart", onCompositionStart);
+        element.removeEventListener("compositionend", onCompositionEnd);
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        pendingEvent = null;
     };
 };
 
