@@ -109,6 +109,27 @@ const cloned = deepClone(obj)
 - `arraySortByKey<T>(obj: T): T` - Sort object by keys
 - `arrayChunk<T>(list: T[], size: number): T[][]` - Split array into chunks
 
+### Animate Utilities
+
+**Types:**
+- `EasingFn` - Easing function type `(t: number) => number`
+
+**Functions:**
+- `linear(t: number): number` - Linear easing (no easing)
+- `easeInQuad(t) / easeOutQuad(t) / easeInOutQuad(t)` - Quadratic easing
+- `easeInCubic(t) / easeOutCubic(t) / easeInOutCubic(t)` - Cubic easing
+- `easeInQuart(t) / easeOutQuart(t) / easeInOutQuart(t)` - Quartic easing
+- `easeInQuint(t) / easeOutQuint(t) / easeInOutQuint(t)` - Quintic easing
+- `easeInSine(t) / easeOutSine(t) / easeInOutSine(t)` - Sine easing
+- `easeInExpo(t) / easeOutExpo(t) / easeInOutExpo(t)` - Exponential easing
+- `easeInCirc(t) / easeOutCirc(t) / easeInOutCirc(t)` - Circular easing
+- `easeInBack(t, s?) / easeOutBack(t, s?) / easeInOutBack(t, s?)` - Back easing (with overshoot)
+- `easeInElastic(t) / easeOutElastic(t) / easeInOutElastic(t)` - Elastic easing
+- `easeInBounce(t) / easeOutBounce(t) / easeInOutBounce(t)` - Bounce easing
+- `clamp01(t: number): number` - Clamp value into [0, 1]
+- `lerp(from: number, to: number, t: number): number` - Linear interpolation
+- `easeValue(from: number, to: number, t: number, easing?: EasingFn): number` - Interpolate with easing applied
+
 ### Math Utilities
 
 **Constants:**

@@ -1,3 +1,44 @@
+// Animate utilities
+export type {
+  EasingFn
+} from './animate'
+export {
+  clamp01,
+  easeInBack,
+  easeInBounce,
+  easeInCirc,
+  easeInCubic,
+  easeInElastic,
+  easeInExpo,
+  easeInOutBack,
+  easeInOutBounce,
+  easeInOutCirc,
+  easeInOutCubic,
+  easeInOutElastic,
+  easeInOutExpo,
+  easeInOutQuad,
+  easeInOutQuart,
+  easeInOutQuint,
+  easeInOutSine,
+  easeInQuad,
+  easeInQuart,
+  easeInQuint,
+  easeInSine,
+  easeOutBack,
+  easeOutBounce,
+  easeOutCirc,
+  easeOutCubic,
+  easeOutElastic,
+  easeOutExpo,
+  easeOutQuad,
+  easeOutQuart,
+  easeOutQuint,
+  easeOutSine,
+  easeValue,
+  lerp,
+  linear
+} from './animate'
+
 // Array utilities
 export {
   arrayChunk,
@@ -40,9 +81,14 @@ export {
 } from './cookie'
 
 // Dom utilities
+export type {
+  ScrollAxis,
+  ScrollToAnimatedOptions
+} from './dom'
 export {
   bindNodeMove,
   buildStyleVars,
+  cancelScrollAnimation,
   createDomByHtml,
   disabled,
   enabled,
@@ -67,6 +113,7 @@ export {
   rectAssoc,
   rectInLayout,
   remove,
+  scrollToAnimated,
   show,
   toggleDisabled
 } from './dom'
