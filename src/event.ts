@@ -131,7 +131,12 @@ export const bindDoubleClick = (element: EventTarget | string, payload: (event: 
  * @param payload - 事件回调函数
  * @returns 解绑函数
  */
-export const bindDomEvent = <E extends Event = Event>(element: EventTarget | string, eventName: string, payload: (event: E) => void) => {
+export const bindDomEvent = <E extends Event = Event>(
+    element: EventTarget | string,
+    eventName: string,
+    payload: (event: E) => void,
+    options?: boolean | AddEventListenerOptions,
+) => {
     const onEvent = (event: Event) => {
         payload(event as E);
     };
@@ -139,9 +144,9 @@ export const bindDomEvent = <E extends Event = Event>(element: EventTarget | str
     if (!el) {
         throw new Error(`EventTarget not found for selector: ${element}`);
     }
-    el.addEventListener(eventName, onEvent);
+    el.addEventListener(eventName, onEvent, options);
     return () => {
-        el.removeEventListener(eventName, onEvent);
+        el.removeEventListener(eventName, onEvent, options);
     };
 };
 
@@ -149,13 +154,13 @@ export const bindDomEvent = <E extends Event = Event>(element: EventTarget | str
  * 为 input/textarea 绑定支持 IME 的防抖函数
  * @param element - DOM 元素
  * @param callback - 回调，参数为 { value, event }
- * @param delay - 防抖延迟（ms），默认 300
+ * @param delay - 防抖延迟（ms），默认 50
  * @returns { destroy, cancel, flush }
  */
 export const bindInputDebounce = (
     element: HTMLInputElement | HTMLTextAreaElement,
     callback: (value: string, event: InputEvent) => void,
-    delay: number = 300,
+    delay: number = 50,
 ): (() => void) => {
     let isComposing = false;
     let timer: number | null = null;
