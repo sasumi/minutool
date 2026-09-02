@@ -8,10 +8,10 @@ import { isNumberic, round } from "./math";
  * @example
  * capitalize('hello') // 'Hello'
  */
-export function capitalize(str: string): string {
+export const capitalize = (str: string): string => {
     if (!str) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
-}
+};
 
 /**
  * 解析带单位的值，返回数值和单位
@@ -185,9 +185,9 @@ export const extract = (es_template: string, params: Record<string, any>): strin
  * camelCase('hello-world') // 'helloWorld'
  * camelCase('hello_world') // 'helloWorld'
  */
-export function camelCase(str: string): string {
+export const camelCase = (str: string): string => {
     return str.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
-}
+};
 
 /**
  * 短横线命名转换
@@ -197,12 +197,12 @@ export function camelCase(str: string): string {
  * kebabCase('helloWorld') // 'hello-world'
  * kebabCase('HelloWorld') // 'hello-world'
  */
-export function kebabCase(str: string): string {
+export const kebabCase = (str: string): string => {
     return str
         .replace(/([a-z])([A-Z])/g, "$1-$2")
         .replace(/[\s_]+/g, "-")
         .toLowerCase();
-}
+};
 
 /**
  * 截断字符串
@@ -213,10 +213,10 @@ export function kebabCase(str: string): string {
  * @example
  * truncate('hello world', 5) // 'hello...'
  */
-export function truncate(str: string, length: number, suffix: string = "..."): string {
+export const truncate = (str: string, length: number, suffix: string = "..."): string => {
     if (str.length <= length) return str;
     return str.slice(0, length) + suffix;
-}
+};
 
 /**
  * 正则表达式转义（将特殊字符转义）

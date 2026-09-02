@@ -5,7 +5,7 @@
  * @example
  * deepClone({ a: 1, b: { c: 2 } })
  */
-export function deepClone<T>(obj: T): T {
+export const deepClone = <T>(obj: T): T => {
     if (obj === null || typeof obj !== "object") return obj;
     if (obj instanceof Date) return new Date(obj.getTime()) as T;
     if (obj instanceof Array) return obj.map((item) => deepClone(item)) as T;
@@ -19,7 +19,7 @@ export function deepClone<T>(obj: T): T {
         return clonedObj;
     }
     return obj;
-}
+};
 
 /**
  * 判断对象是否为空
@@ -29,9 +29,9 @@ export function deepClone<T>(obj: T): T {
  * isEmptyObject({}) // true
  * isEmptyObject({ a: 1 }) // false
  */
-export function isEmptyObject(obj: object): boolean {
+export const isEmptyObject = (obj: object): boolean => {
     return Object.keys(obj).length === 0;
-}
+};
 
 /**
  * 根据映射关系替换对象的键
@@ -65,7 +65,7 @@ export const objectEntries = <T extends Record<string | number | symbol, any>>(o
         const parsedKey = /^\d+$/.test(key) ? Number(key) : key;
         return [parsedKey, value] as [keyof T, T[keyof T]];
     });
-}
+};
 
 /**
  * 从键值对数组创建对象，代替 Object.fromEntries，如果key是数字字符串，则转换为数字类型
@@ -81,7 +81,7 @@ export const objectFromEntries = <T extends Record<string | number | symbol, any
         obj[parsedKey] = value;
     }
     return obj as T;
-}
+};
 
 /**
  * 交换对象中的键值对
@@ -104,7 +104,7 @@ export const objectSwitchKV = (obj: object) => {
  * get({ a: { b: { c: 1 } } }, 'a.b.c') // 1
  * get({ a: { b: 1 } }, 'a.b.c', 0) // 0
  */
-export function objectGet<T = any>(obj: object, path: string, defaultValue?: T): T {
+export const objectGet = <T = any>(obj: object, path: string, defaultValue?: T): T => {
     const keys = path.split(".");
     let result: any = obj;
 
@@ -116,7 +116,7 @@ export function objectGet<T = any>(obj: object, path: string, defaultValue?: T):
     }
 
     return result !== undefined ? result : (defaultValue as T);
-}
+};
 
 /**
  * 设置对象指定路径的值
@@ -126,7 +126,7 @@ export function objectGet<T = any>(obj: object, path: string, defaultValue?: T):
  * @example
  * set({}, 'a.b.c', 1) // { a: { b: { c: 1 } } }
  */
-export function objectSet(obj: any, path: string, value: any): void {
+export const objectSet = (obj: any, path: string, value: any): void => {
     const keys = path.split(".");
     const lastKey = keys.pop()!;
     let current = obj;
@@ -139,7 +139,7 @@ export function objectSet(obj: any, path: string, value: any): void {
     }
 
     current[lastKey] = value;
-}
+};
 
 /**
  * 合并对象
@@ -149,7 +149,7 @@ export function objectSet(obj: any, path: string, value: any): void {
  * @example
  * merge({ a: 1 }, { b: 2 }, { c: 3 }) // { a: 1, b: 2, c: 3 }
  */
-export function objectMerge<T extends object>(target: T, ...sources: Partial<T>[]): T {
+export const objectMerge = <T extends object>(target: T, ...sources: Partial<T>[]): T => {
     for (const source of sources) {
         for (const key in source) {
             if (source.hasOwnProperty(key)) {
@@ -172,7 +172,7 @@ export function objectMerge<T extends object>(target: T, ...sources: Partial<T>[
         }
     }
     return target;
-}
+};
 
 /**
  * 清理对象中的 null 值

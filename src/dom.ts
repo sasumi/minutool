@@ -613,7 +613,7 @@ export const buildStyleVars = (vars: Record<string, number | string | undefined>
  * @param element - 要移动的元素
  * @param handle - 拖动句柄，默认为元素本身
  */
-export function bindNodeMove(element: HTMLElement | string, handle: HTMLElement | string | null = null) {
+export const bindNodeMove = (element: HTMLElement | string, handle: HTMLElement | string | null = null) => {
     const el = findOne(element) as HTMLElement;
     handle = findOne(handle || el) as HTMLElement;
     const previousPosition = el.style.position;
@@ -664,7 +664,7 @@ export function bindNodeMove(element: HTMLElement | string, handle: HTMLElement 
         el.style.top = previousTop;
         el.style.transform = previousTransform;
     };
-}
+};
 
 export type ScrollAxis = "scrollLeft" | "scrollTop";
 
@@ -691,13 +691,13 @@ const ScrollRunning = new WeakMap<HTMLElement, { raf: number; prevBehavior: stri
  * 取消 el 上正在进行的滚动动画（若有），并还原 CSS 滚动行为
  * @param el 要取消滚动动画的元素
  */
-export function cancelScrollAnimation(el: HTMLElement): void {
+export const cancelScrollAnimation = (el: HTMLElement): void => {
     const rec = ScrollRunning.get(el);
     if (!rec) return;
     cancelAnimationFrame(rec.raf);
     ScrollRunning.delete(el);
     el.style.scrollBehavior = rec.prevBehavior;
-}
+};
 
 /**
  * 用 rAF + 缓动把 el 平滑滚动到 target（自动夹取在合法滚动范围内）
@@ -705,7 +705,7 @@ export function cancelScrollAnimation(el: HTMLElement): void {
  * @param target 目标滚动位置
  * @param options 动画选项
  */
-export function scrollToAnimated(el: HTMLElement, target: number, options: ScrollToAnimatedOptions = {}): void {
+export const scrollToAnimated = (el: HTMLElement, target: number, options: ScrollToAnimatedOptions = {}): void => {
     const { duration = 380, axis = "scrollLeft", onEnd, easingFn = easeInOutCubic } = options;
 
     cancelScrollAnimation(el); // 打断该元素上旧的动画，避免互相干扰
@@ -741,4 +741,4 @@ export function scrollToAnimated(el: HTMLElement, target: number, options: Scrol
         }
     };
     ScrollRunning.set(el, { raf: requestAnimationFrame(step), prevBehavior });
-}
+};
