@@ -91,25 +91,29 @@ export const toggleDisabled = (el: HTMLElement | string, disabledClass: string =
  * @param onHoverOut - 鼠标离开回调函数
  * @returns 返回解绑函数
  */
-export const onHover = (el: HTMLElement | string, onHoverIn: () => void, onHoverOut: () => void): () => void => {
+export const onHover = (el: HTMLElement | string, onHoverIn: () => void, onHoverOut: () => void): (() => void) => {
     el = findOne(el) as HTMLElement;
     let isHovering = false;
     const cleanup: (() => void)[] = [];
-    cleanup.push(bindDomEvent(el, "mouseenter", () => {
-        if (!isHovering) {
-            isHovering = true;
-            onHoverIn && onHoverIn();
-        }
-    }));
-    cleanup.push(bindDomEvent(el, "mouseleave", () => {
-        if (isHovering) {
-            isHovering = false;
-            onHoverOut && onHoverOut();
-        }
-    }));
+    cleanup.push(
+        bindDomEvent(el, "mouseenter", () => {
+            if (!isHovering) {
+                isHovering = true;
+                onHoverIn && onHoverIn();
+            }
+        }),
+    );
+    cleanup.push(
+        bindDomEvent(el, "mouseleave", () => {
+            if (isHovering) {
+                isHovering = false;
+                onHoverOut && onHoverOut();
+            }
+        }),
+    );
     return () => {
         cleanup.forEach((fn) => fn());
-    }
+    };
 };
 
 /**
@@ -524,10 +528,7 @@ export const fixBaseUrl = (url: string, baseUrl: string): string => {
  * @param [parentNode=null] - 父级节点，如果提供则自动添加到父节点
  * @returns 返回创建的元素，单个或多个
  */
-export const createDomByHtml = <T extends Element = Element>(
-    html: string,
-    parentNode: HTMLElement | null = null
-): T | T[] => {
+export const createDomByHtml = <T extends Element = Element>(html: string, parentNode: HTMLElement | null = null): T | T[] => {
     const tpl = document.createElement("template");
     html = html.trim();
     tpl.innerHTML = html;
@@ -592,7 +593,7 @@ export const getBoundingClientRect = (el: HTMLElement, autoFixInvisible = false)
  * @param {Record<string, number|string|undefined>} vars - CSS 变量对象
  * @returns {Record<string, string>} 返回格式化后的 CSS 变量对象
  * @example
- * buildStyleVars({width: '100px', color: 'red', text:'"hello"'}) 
+ * buildStyleVars({width: '100px', color: 'red', text:'"hello"'})
  * 输出 // {'--width': '100px', '--color': 'red', '--text': '"hello"'}
  * 实际样式：style="--width: 100px; --color: red; --text: \"hello\";"
  */
@@ -665,24 +666,28 @@ export function bindNodeMove(element: HTMLElement | string, handle: HTMLElement 
     };
 }
 
-export type ScrollAxis = 'scrollLeft' | 'scrollTop';
+export type ScrollAxis = "scrollLeft" | "scrollTop";
 
 export interface ScrollToAnimatedOptions {
     /** 动画时长(ms)，默认 380 */
     duration?: number;
+
     /** 滚动的属性，默认横向 'scrollLeft' */
     axis?: ScrollAxis;
+
+    /** 缓动函数，默认 easeInOutCubic */
+    easingFn?: (t: number) => number;
+
     /** 动画自然结束（或被取消/被新动画取代）时回调 */
     onEnd?: () => void;
 }
-
 
 /**
  * 记录每个元素上正在进行的滚动动画
  */
 const ScrollRunning = new WeakMap<HTMLElement, { raf: number; prevBehavior: string }>();
 
-/** 
+/**
  * 取消 el 上正在进行的滚动动画（若有），并还原 CSS 滚动行为
  * @param el 要取消滚动动画的元素
  */
@@ -694,21 +699,21 @@ export function cancelScrollAnimation(el: HTMLElement): void {
     el.style.scrollBehavior = rec.prevBehavior;
 }
 
-/** 
+/**
  * 用 rAF + 缓动把 el 平滑滚动到 target（自动夹取在合法滚动范围内）
  * @param el 要滚动的元素
  * @param target 目标滚动位置
  * @param options 动画选项
  */
 export function scrollToAnimated(el: HTMLElement, target: number, options: ScrollToAnimatedOptions = {}): void {
-    const { duration = 380, axis = 'scrollLeft', onEnd } = options;
+    const { duration = 380, axis = "scrollLeft", onEnd, easingFn = easeInOutCubic } = options;
 
     cancelScrollAnimation(el); // 打断该元素上旧的动画，避免互相干扰
 
     const prevBehavior = el.style.scrollBehavior;
-    el.style.scrollBehavior = 'auto'; // 逐帧赋值，避免被 CSS 的 scroll-behavior: smooth 再套一层动画
+    el.style.scrollBehavior = "auto"; // 逐帧赋值，避免被 CSS 的 scroll-behavior: smooth 再套一层动画
 
-    const max = axis === 'scrollLeft' ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+    const max = axis === "scrollLeft" ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
     const dest = Math.max(0, Math.min(max, target));
     const start = el[axis];
     const dist = dest - start;
@@ -726,7 +731,7 @@ export function scrollToAnimated(el: HTMLElement, target: number, options: Scrol
     const t0 = performance.now();
     const step = (now: number): void => {
         const p = Math.min(1, (now - t0) / duration);
-        el[axis] = start + dist * easeInOutCubic(p);
+        el[axis] = start + dist * easingFn(p);
         const rec = ScrollRunning.get(el);
         if (p < 1 && rec) {
             rec.raf = requestAnimationFrame(step);
