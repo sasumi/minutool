@@ -1,6 +1,6 @@
 {
   "name": "minutool",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "A collection of utility functions for time, string, object and more",
   "type": "module",
   "main": "./dist/minutool.umd.cjs",
