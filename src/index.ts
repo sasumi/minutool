@@ -126,6 +126,7 @@ export {
   bindInputDebounce,
   bindKeyDown,
   bindKeyUp,
+  bindStorageEvent,
   dispatchEvent,
   eventDelegate,
   offEvent,

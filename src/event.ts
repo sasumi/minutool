@@ -222,6 +222,24 @@ export const bindInputDebounce = (
 };
 
 /**
+ * 为指定的 localStorage key 绑定变化事件
+ * @param key - localStorage 的 key
+ * @param callback - 回调，参数为新的值
+ * @returns { destroy } - 解绑函数
+ */
+export const bindStorageEvent = (key: string, callback: (value: string | null) => void): (() => void) => {
+    const handleStorage = (e: StorageEvent) => {
+        if (e.key === key) {
+            callback(e.newValue);
+        }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => {
+        window.removeEventListener("storage", handleStorage);
+    };
+};
+
+/**
  * 触发HTML节点事件
  * @param node HTML节点
  * @param event 事件名称
