@@ -612,8 +612,19 @@ export const buildStyleVars = (vars: Record<string, number | string | undefined>
  * 绑定对象移动事件
  * @param element - 要移动的元素
  * @param handle - 拖动句柄，默认为元素本身
+ * @param options - 移动选项
+ * @param options.lockInView - 是否限制元素四边不超出视口，默认 true
  */
-export const bindNodeMove = (element: HTMLElement | string, handle: HTMLElement | string | null = null) => {
+export const bindNodeMove = (
+    element: HTMLElement | string,
+    handle: HTMLElement | string | null = null,
+    {
+        lockInView = false,
+        onStart,
+        onEnd,
+        onMove: onMoving,
+    }: { lockInView?: boolean; onStart?: () => void | false; onEnd?: () => void; onMove?: (left: number, top: number) => void } = {},
+) => {
     const el = findOne(element) as HTMLElement;
     handle = findOne(handle || el) as HTMLElement;
     const previousPosition = el.style.position;
@@ -631,18 +642,31 @@ export const bindNodeMove = (element: HTMLElement | string, handle: HTMLElement 
         }
         el.style.position = "fixed";
         el.style.transform = "none";
-        el.style.left = `${event.clientX - offsetX}px`;
-        el.style.top = `${event.clientY - offsetY}px`;
+        let left = event.clientX - offsetX;
+        let top = event.clientY - offsetY;
+        if (lockInView) {
+            const maxLeft = window.innerWidth - el.offsetWidth;
+            const maxTop = window.innerHeight - el.offsetHeight;
+            left = Math.min(Math.max(0, left), maxLeft);
+            top = Math.min(Math.max(0, top), maxTop);
+        }
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+        onMoving && onMoving(left, top);
     };
 
     const stopDragging = () => {
         dragging = false;
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", stopDragging);
+        onEnd && onEnd();
     };
 
     const onMouseDown = (event: MouseEvent) => {
         if (event.button !== 0) {
+            return;
+        }
+        if (onStart && onStart() === false) {
             return;
         }
         dragging = true;
