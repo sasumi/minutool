@@ -609,11 +609,32 @@ export const buildStyleVars = (vars: Record<string, number | string | undefined>
 };
 
 /**
+ * 移动元素的选项接口
+ */
+interface BindNodeMoveOptions {
+    // 是否限制元素四边不超出视口，默认 false
+    lockInView?: boolean;
+
+    // 拖动开始时的回调
+    onStart?: () => void | false;
+
+    // 拖动过程中的回调
+    onEnd?: (left: number, top: number) => void;
+
+    // 拖动结束时的回调
+    onMove?: (left: number, top: number) => void;
+}
+
+/**
  * 绑定对象移动事件
  * @param element - 要移动的元素
  * @param handle - 拖动句柄，默认为元素本身
  * @param options - 移动选项
- * @param options.lockInView - 是否限制元素四边不超出视口，默认 true
+ * @param options.lockInView - 是否限制元素四边不超出视口，默认 false
+ * @param options.onStart - 开始拖动时的回调，返回 false 可阻止拖动
+ * @param options.onEnd - 结束拖动时的回调，参数为元素的最终 left 和 top 值
+ * @param options.onMove - 拖动过程中触发的回调，参数为元素的当前 left 和 top 值
+ * @returns 一个函数，用于解绑移动事件并恢复元素的初始样式
  */
 export const bindNodeMove = (
     element: HTMLElement | string,
@@ -623,7 +644,7 @@ export const bindNodeMove = (
         onStart,
         onEnd,
         onMove: onMoving,
-    }: { lockInView?: boolean; onStart?: () => void | false; onEnd?: () => void; onMove?: (left: number, top: number) => void } = {},
+    }: BindNodeMoveOptions = {},
 ) => {
     const el = findOne(element) as HTMLElement;
     handle = findOne(handle || el) as HTMLElement;
@@ -659,7 +680,7 @@ export const bindNodeMove = (
         dragging = false;
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", stopDragging);
-        onEnd && onEnd();
+        onEnd && onEnd(parseInt(el.style.left, 10), parseInt(el.style.top, 10));
     };
 
     const onMouseDown = (event: MouseEvent) => {
