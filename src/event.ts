@@ -253,3 +253,19 @@ export const triggerDomEvent = (node: EventTarget, event: string) => {
         (node as any).fireEvent("on" + event.toLowerCase());
     }
 };
+
+/**
+ * 组合多个清理函数为一个清理函数
+ * @param cleanups - 要组合的清理函数数组
+ * @returns 一个函数，调用时会依次执行所有传入的清理函数
+ * @example
+ * const cleanup1 = () => console.log('cleanup1');
+ * const cleanup2 = () => console.log('cleanup2');
+ * const combinedCleanup = composeCleanups(cleanup1, cleanup2);
+ * combinedCleanup(); // 会依次执行 cleanup1 和 cleanup2
+ */
+export const composeCleanups = (...cleanups: Array<() => void>): (() => void) => {
+    return () => {
+        cleanups.forEach((cleanup) => cleanup());
+    };
+};

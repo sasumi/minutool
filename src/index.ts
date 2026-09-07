@@ -127,6 +127,7 @@ export {
   bindKeyDown,
   bindKeyUp,
   bindStorageEvent,
+  composeCleanups,
   dispatchEvent,
   eventDelegate,
   offEvent,
