@@ -175,9 +175,9 @@ export const objectMerge = <T extends object>(target: T, ...sources: Partial<T>[
 };
 
 /**
- * 清理对象中的 null 值
- * @param {any} obj - 要清理的对象
- * @param {boolean} [recursive=false] - 是否递归清理子对象
+ * 清理对象中的 null或undefined 值
+ * @param obj - 要清理的对象
+ * @param recursive - 是否递归清理子对象
  * @returns {any} 返回清理后的对象
  * @example
  * cleanNull({a: 1, b: null, c: {d: null}}, true) // {a: 1, c: {}}
@@ -185,7 +185,7 @@ export const objectMerge = <T extends object>(target: T, ...sources: Partial<T>[
 export const cleanNull = <T>(obj: T, recursive = false): T => {
     const o = obj as any;
     for (const key in o) {
-        if (o[key] === null) {
+        if (o[key] === null || o[key] === undefined) {
             delete o[key];
         } else if (recursive && typeof o[key] === "object") {
             cleanNull(o[key], true);
