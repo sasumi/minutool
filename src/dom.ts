@@ -615,54 +615,88 @@ interface BindNodeMoveOptions {
     // 是否限制元素四边不超出视口，默认 false
     lockInView?: boolean;
 
-    // 拖动开始时的回调
-    onStart?: () => void | false;
+    // 拖动开始时的回调，返回 false 可阻止本次拖动
+    onStart?: (event: PointerEvent) => void | false;
 
-    // 拖动过程中的回调
-    onEnd?: (left: number, top: number) => void;
-
-    // 拖动结束时的回调
+    // 拖动过程中的回调，参数为元素当前的视口坐标
     onMove?: (left: number, top: number) => void;
+
+    // 拖动结束时的回调，参数为元素最终的视口坐标（未真正移动过则不触发）
+    onEnd?: (left: number, top: number) => void;
 }
 
 /**
- * 绑定对象移动事件
+ * 绑定对象移动事件：按住 handle 拖动 element
+ * 基于 Pointer Events，鼠标 / 触摸 / 笔通用；绑定期给 handle 设 touch-action:none，
+ * 避免触摸拖动被页面滚动或缩放手势打断（解绑时还原）
+ * 首次移动才把元素转为 fixed 定位并清除 margin / width 等原定位残留，拖动全程不跳位；
+ * 解绑时还原全部被改写的内联样式
  * @param element - 要移动的元素
  * @param handle - 拖动句柄，默认为元素本身
  * @param options - 移动选项
  * @param options.lockInView - 是否限制元素四边不超出视口，默认 false
- * @param options.onStart - 开始拖动时的回调，返回 false 可阻止拖动
- * @param options.onEnd - 结束拖动时的回调，参数为元素的最终 left 和 top 值
- * @param options.onMove - 拖动过程中触发的回调，参数为元素的当前 left 和 top 值
+ * @param options.onStart - 开始拖动时的回调，返回 false 可阻止本次拖动
+ * @param options.onMove - 拖动过程中触发的回调，参数为元素的当前视口坐标
+ * @param options.onEnd - 结束拖动时的回调，参数为元素最终的视口坐标（未真正移动过则不触发）
  * @returns 一个函数，用于解绑移动事件并恢复元素的初始样式
  */
 export const bindNodeMove = (
     element: HTMLElement | string,
     handle: HTMLElement | string | null = null,
-    {
-        lockInView = false,
-        onStart,
-        onEnd,
-        onMove: onMoving,
-    }: BindNodeMoveOptions = {},
+    { lockInView = false, onStart, onEnd, onMove: onMoving }: BindNodeMoveOptions = {},
 ) => {
     const el = findOne(element) as HTMLElement;
-    handle = findOne(handle || el) as HTMLElement;
-    const previousPosition = el.style.position;
-    const previousLeft = el.style.left;
-    const previousTop = el.style.top;
-    const previousTransform = el.style.transform;
+    const handleEl = findOne(handle || el) as HTMLElement;
+    if (!el || !handleEl) {
+        throw new Error(`bindNodeMove: element not found (${element})`);
+    }
 
-    let dragging = false;
+    const previousStyle = {
+        position: el.style.position,
+        left: el.style.left,
+        top: el.style.top,
+        width: el.style.width,
+        boxSizing: el.style.boxSizing,
+        transform: el.style.transform,
+        marginLeft: el.style.marginLeft,
+        marginTop: el.style.marginTop,
+        userSelect: el.style.userSelect,
+        touchAction: handleEl.style.touchAction,
+    };
+    // 触摸拖动期间禁用 handle 上的默认手势，否则指针事件会被页面滚动接管
+    handleEl.style.touchAction = "none";
+
+    let pointerId: number | null = null;
+    let startRect: DOMRect | null = null;
     let offsetX = 0;
     let offsetY = 0;
+    // 是否已切换为 fixed 定位：按下不移动就不改样式，避免留下副作用
+    let pinned = false;
+    let lastLeft = 0;
+    let lastTop = 0;
 
-    const onMouseMove = (event: MouseEvent) => {
-        if (!dragging) {
-            return;
-        }
+    /** 首次移动时按按下瞬间的视口位置固定元素，抵消原 CSS 定位（margin / left:auto 等）的影响 */
+    const pinElement = (rect: DOMRect) => {
         el.style.position = "fixed";
         el.style.transform = "none";
+        el.style.marginLeft = "0";
+        el.style.marginTop = "0";
+        // fixed 后不再撑满容器，按当前尺寸写死（border-box 下宽度才与 rect 一致）
+        el.style.boxSizing = "border-box";
+        el.style.width = `${rect.width}px`;
+        el.style.userSelect = "none";
+        el.style.left = `${rect.left}px`;
+        el.style.top = `${rect.top}px`;
+        pinned = true;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+        if (event.pointerId !== pointerId) {
+            return;
+        }
+        if (!pinned && startRect) {
+            pinElement(startRect);
+        }
         let left = event.clientX - offsetX;
         let top = event.clientY - offsetY;
         if (lockInView) {
@@ -671,43 +705,73 @@ export const bindNodeMove = (
             left = Math.min(Math.max(0, left), maxLeft);
             top = Math.min(Math.max(0, top), maxTop);
         }
+        lastLeft = left;
+        lastTop = top;
         el.style.left = `${left}px`;
         el.style.top = `${top}px`;
         onMoving && onMoving(left, top);
     };
 
-    const stopDragging = () => {
-        dragging = false;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", stopDragging);
-        onEnd && onEnd(parseInt(el.style.left, 10), parseInt(el.style.top, 10));
+    const onPointerUp = () => {
+        stopDragging(true);
     };
 
-    const onMouseDown = (event: MouseEvent) => {
-        if (event.button !== 0) {
+    /** 结束本次拖动：notify 为 true 且真正移动过时才回调 onEnd */
+    const stopDragging = (notify: boolean) => {
+        if (pointerId === null) {
             return;
         }
-        if (onStart && onStart() === false) {
+        const wasPinned = pinned;
+        pointerId = null;
+        startRect = null;
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
+        if (notify && wasPinned) {
+            onEnd && onEnd(lastLeft, lastTop);
+        }
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+        if (event.button !== 0 || !event.isPrimary) {
             return;
         }
-        dragging = true;
+        if (onStart && onStart(event) === false) {
+            return;
+        }
         const rect = el.getBoundingClientRect();
+        pointerId = event.pointerId;
+        startRect = rect;
         offsetX = event.clientX - rect.left;
         offsetY = event.clientY - rect.top;
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", stopDragging);
+        lastLeft = rect.left;
+        lastTop = rect.top;
+        try {
+            handleEl.setPointerCapture(event.pointerId);
+        } catch {
+            // 指针已失效时忽略：监听挂在 window 上，仍能收到后续事件
+        }
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
         event.preventDefault();
     };
 
-    handle.addEventListener("mousedown", onMouseDown);
+    handleEl.addEventListener("pointerdown", onPointerDown);
 
     return () => {
-        stopDragging();
-        handle.removeEventListener("mousedown", onMouseDown);
-        el.style.position = previousPosition;
-        el.style.left = previousLeft;
-        el.style.top = previousTop;
-        el.style.transform = previousTransform;
+        stopDragging(false);
+        handleEl.removeEventListener("pointerdown", onPointerDown);
+        handleEl.style.touchAction = previousStyle.touchAction;
+        el.style.position = previousStyle.position;
+        el.style.left = previousStyle.left;
+        el.style.top = previousStyle.top;
+        el.style.width = previousStyle.width;
+        el.style.boxSizing = previousStyle.boxSizing;
+        el.style.transform = previousStyle.transform;
+        el.style.marginLeft = previousStyle.marginLeft;
+        el.style.marginTop = previousStyle.marginTop;
+        el.style.userSelect = previousStyle.userSelect;
     };
 };
 
