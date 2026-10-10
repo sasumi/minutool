@@ -1,16 +1,19 @@
 import { deleteCookie, getCookie, setCookie } from "./cookie";
 
-export type CACHE_TYPE_MEM = "memory";
-export type CACHE_TYPE_SESSION = "session";
-export type CACHE_TYPE_LOCALSTORAGE = "localStorage";
-export type CACHE_TYPE_COOKIE = "cookie";
-export type CACHE_TYPE_INDEXEDDB = "indexedDB";
-export type CACHE_TYPE = CACHE_TYPE_MEM | CACHE_TYPE_SESSION | CACHE_TYPE_LOCALSTORAGE | CACHE_TYPE_COOKIE | CACHE_TYPE_INDEXEDDB;
+export const CACHE_TYPE_MEM = "memory";
+export const CACHE_TYPE_SESSION = "session";
+export const CACHE_TYPE_LOCALSTORAGE = "localStorage";
+export const CACHE_TYPE_COOKIE = "cookie";
+export const CACHE_TYPE_INDEXEDDB = "indexedDB";
+export type CACHE_TYPE = typeof CACHE_TYPE_MEM | typeof CACHE_TYPE_SESSION | typeof CACHE_TYPE_LOCALSTORAGE | typeof CACHE_TYPE_COOKIE | typeof CACHE_TYPE_INDEXEDDB;
+
+/** Web Storage 缓存类型（sessionStorage / localStorage） */
+type CACHE_TYPE_STORAGE = typeof CACHE_TYPE_SESSION | typeof CACHE_TYPE_LOCALSTORAGE;
 
 const CACHE_KEY_PREFIX = "cache_";
 
 /** 全部缓存类型，用于不指定类型时批量清理 */
-const CACHE_TYPES: CACHE_TYPE[] = ["memory", "session", "localStorage", "cookie", "indexedDB"];
+const CACHE_TYPES: CACHE_TYPE[] = [CACHE_TYPE_MEM, CACHE_TYPE_SESSION, CACHE_TYPE_LOCALSTORAGE, CACHE_TYPE_COOKIE, CACHE_TYPE_INDEXEDDB];
 
 /** 内存缓存容器，随页面生命周期存在 */
 const MEMORY_CACHE = new Map<string, any>();
@@ -31,7 +34,7 @@ interface CacheEntry {
 }
 
 /** Web Storage 的窗口属性名映射 */
-const STORAGE_NAMES: Record<CACHE_TYPE_SESSION | CACHE_TYPE_LOCALSTORAGE, "sessionStorage" | "localStorage"> = {
+const STORAGE_NAMES: Record<CACHE_TYPE_STORAGE, "sessionStorage" | "localStorage"> = {
     session: "sessionStorage",
     localStorage: "localStorage",
 };
@@ -90,7 +93,7 @@ const isCacheEntry = (value: any): value is CacheEntry =>
 const isExpired = (entry: CacheEntry): boolean => entry.expireAt !== null && Date.now() > entry.expireAt;
 
 /** 获取 Web Storage 实例，环境不支持时抛出异常 */
-const getStorage = (type: CACHE_TYPE_SESSION | CACHE_TYPE_LOCALSTORAGE): Storage => {
+const getStorage = (type: CACHE_TYPE_STORAGE): Storage => {
     const name = STORAGE_NAMES[type];
     if (typeof window === "undefined" || !window[name]) {
         throw new Error(`${name} is not available in the current environment`);
@@ -179,7 +182,7 @@ const sweepIndexedDB = (): Promise<number> =>
     );
 
 /** 清理 Web Storage 中已过期的缓存条目 */
-const sweepStorage = (type: CACHE_TYPE_SESSION | CACHE_TYPE_LOCALSTORAGE): number => {
+const sweepStorage = (type: CACHE_TYPE_STORAGE): number => {
     const storage = getStorage(type);
     let count = 0;
     // 先取出键名快照，避免遍历过程中删除数据导致下标错位

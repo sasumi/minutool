@@ -74,14 +74,14 @@ export {
 
 // Cache utilities
 export type {
-  CACHE_TYPE,
+  CACHE_TYPE
+} from './cache'
+export {
   CACHE_TYPE_COOKIE,
   CACHE_TYPE_INDEXEDDB,
   CACHE_TYPE_LOCALSTORAGE,
   CACHE_TYPE_MEM,
-  CACHE_TYPE_SESSION
-} from './cache'
-export {
+  CACHE_TYPE_SESSION,
   buildCacheKey,
   cacheClear,
   cacheDelete,
