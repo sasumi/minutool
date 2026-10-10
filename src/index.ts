@@ -72,6 +72,24 @@ export {
   toggleFullScreen
 } from './browser'
 
+// Cache utilities
+export type {
+  CACHE_TYPE,
+  CACHE_TYPE_COOKIE,
+  CACHE_TYPE_INDEXEDDB,
+  CACHE_TYPE_LOCALSTORAGE,
+  CACHE_TYPE_MEM,
+  CACHE_TYPE_SESSION
+} from './cache'
+export {
+  buildCacheKey,
+  cacheClear,
+  cacheDelete,
+  cacheGet,
+  cacheSet,
+  cacheSweep
+} from './cache'
+
 // Cookie utilities
 export {
   deleteCookie,

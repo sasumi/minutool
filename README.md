@@ -157,6 +157,35 @@ const cloned = deepClone(obj)
 - `isInFullScreen(): boolean` - Check if in fullscreen
 - `detectLanguage(supportedLngs: string[]): string` - Detect browser language
 
+### Cache Utilities
+
+Support `memory`, `session`, `localStorage`, `cookie` and `indexedDB` as cache stores. Values are serialized before writing, so objects and other non-string types can be restored as-is.
+
+**Functions:**
+- `buildCacheKey(param: string | number | object): string` - Build a prefixed cache key
+- `cacheGet(type: CACHE_TYPE, key: string, defaultValue?: any): Promise<any>` - Read a cached value, returning `defaultValue` or `null` when missing
+- `cacheSet(type: CACHE_TYPE, key: string, value: any, expireSeconds?: number): Promise<void>` - Write a cached value, optionally expiring after `expireSeconds` seconds
+- `cacheDelete(type: CACHE_TYPE, key: string): Promise<void>` - Delete a cached value
+- `cacheClear(type: CACHE_TYPE): Promise<void>` - Clear cached data of the given type (only entries with the cache prefix are removed)
+- `cacheSweep(type?: CACHE_TYPE): Promise<number>` - Proactively remove expired entries, returning how many were removed; omit `type` to sweep every cache type (unsupported ones are skipped)
+
+```typescript
+import { cacheSet, cacheGet, cacheDelete, cacheClear, cacheSweep } from 'minutool'
+
+await cacheSet('localStorage', 'user', { name: 'tom' })
+await cacheGet('localStorage', 'user') // { name: 'tom' }
+await cacheGet('localStorage', 'none', []) // [] default value
+
+await cacheSet('localStorage', 'token', 'abc', 3600) // expires after 1 hour
+await cacheSweep('localStorage') // 3, removes expired entries right away
+await cacheSweep() // sweeps memory, session, localStorage, cookie and indexedDB
+
+await cacheDelete('localStorage', 'user')
+await cacheClear('localStorage')
+```
+
+Expired entries are removed when read and treated as missing: `cacheGet` returns `defaultValue`, or `null` when no default value is given. Omitting `expireSeconds` (or passing a value `<= 0`) stores the value permanently. Only the `cookie` store also writes the expiry to the cookie itself, so browsers drop it without waiting for a read or a sweep.
+
 ### Cookie Utilities
 
 **Functions:**
